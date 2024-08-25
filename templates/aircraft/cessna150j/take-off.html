@@ -1,3 +1,6 @@
+{%- import "macros/percent_between.html" as percent_between -%}
+{%- import "macros/cessna150j/temperature_correction.html" as temperature_correction -%}
+{%- import "macros/cessna150j/grass_correction.html" as grass_correction -%}
 <!DOCTYPE html>
 <html>
     <head>
@@ -7,7 +10,16 @@
     </head>
     <body>
         <h2>Take Off</h2>
-        <p>The headwind of {{cessna.headwind_kts}} kts is {{"{:.2}"|format(cessna.headwind_tween_percentage * 100.0)}}% between the lower bound of {{cessna.headwinds.lower_value}} kts and the upper bound of {{cessna.headwinds.upper_value}}kts.</p>
+        <p>
+            The airport elevation of {{cessna.elevation_ft}}' is 
+            {% call percent_between::render(cessna.elevation_ft, cessna.atmosphere_bounds.lower.altitude, cessna.atmosphere_bounds.upper.altitude, cessna.altitude_tween_percentage, "'") %}
+            of the way between {{cessna.atmosphere_bounds.lower.altitude}}' and {{cessna.atmosphere_bounds.upper.altitude}}'.
+        </p>
+        <p>
+            The headwind of {{cessna.headwind_kts}} kts is
+            {% call percent_between::render(cessna.headwind_kts, cessna.headwinds.lower_value, cessna.headwinds.upper_value, cessna.headwind_tween_percentage, " kts") %}
+            between the lower bound of {{cessna.headwinds.lower_value}} kts and the upper bound of {{cessna.headwinds.upper_value}}kts.
+        </p>
         <p>
             The relevant distances are then:            
             <table>
@@ -54,84 +66,25 @@
             </table>
         </p>
         <h3>Increase distances 10% for each 35°F in temperature above standard for the particular altitude.</h3>
-        <ul>
-            <li>The difference between {{cessna.temperature_f}}°F and the standard temperature of {{cessna.standard_temperature_f}}°F is: 
-                <math>
-                    <mn>{{cessna.temperature_f}}°F</mn>
-                    <mo>&minus;</mo>
-                    <mn>{{cessna.standard_temperature_f}}°F</mn>
-                    <mo>&equals;</mo>
-                    <mn>{{cessna.temperature_f_diff_from_standard}}°F</mn>
-                </math>
-            </li>
-            <li>
-                <math>
-                    <mn>10%</mn>
-                    <mo>&times;</mo>
-                    <mrow>
-                        <mo>(</mo>
-                        <mfrac>
-                            <mn>{{cessna.temperature_f_diff_from_standard}}°F</mn>
-                            <mn>35°F</mn>
-                        </mfrac>
-                        <mo>)</mo>
-                    </mrow>
-                    <mo>≈</mo>
-                    <mn>{{"{:.2}"|format(calcs.correction.standard_temperature_correction_percentage * 100.0)}}%</mn>
-                </math>
-            </li>
-            <li>
-                Ground Run:
-                <math>
-                    <mn>{{calcs.takeoff_distances[1].middle_value.unwrap().ground_run()}}'</mn>
-                    <mo>&times;</mo>
-                    <mn>{{"{:.4}"|format(1.0 + calcs.correction.standard_temperature_correction_percentage)}}</mn>
-                    <mo>≈</mo>
-                    <mn>{{calcs.correction.distance_corrected_for_temperature.ground_run()}}'</mn>
-                </math>
-            </li>
-            <li>
-                Clear 50' Obs:
-                <math>
-                    <mn>{{calcs.takeoff_distances[1].middle_value.unwrap().clear_50_ft_obstacle()}}'</mn>
-                    <mo>&times;</mo>
-                    <mn>{{"{:.4}"|format(1.0 + calcs.correction.standard_temperature_correction_percentage)}}</mn>
-                    <mo>≈</mo>
-                    <mn>{{calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()}}'</mn>
-                </math>
-            </li>
-        </ul>
+        {% call temperature_correction::render(
+            cessna.temperature_f, 
+            cessna.standard_temperature_f, 
+            cessna.temperature_f_diff_from_standard, 
+            35, 
+            calcs.correction.standard_temperature_correction_percentage, 
+            calcs.takeoff_distances[1].middle_value.unwrap().ground_run(), 
+            calcs.correction.distance_corrected_for_temperature.ground_run(), 
+            calcs.takeoff_distances[1].middle_value.unwrap().clear_50_ft_obstacle(), 
+            calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()) 
+        %}
         <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 7% of the "Total to Clear 50' Obstacle") figure.</h3>
-        <ul>
-            <li>
-                <math>
-                    <mn>{{calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()}}'</mn>
-                    <mo>&times;</mo>
-                    <mn>0.07</mn>
-                    <mo>≈</mo>
-                    <mn>{{calcs.correction.grass_offset}}'</mn>
-                </math>
-            </li>
-            <li>
-                Ground Run:
-                <math>
-                    <mn>{{calcs.correction.distance_corrected_for_temperature.ground_run()}}'</mn>
-                    <mo>&plus;</mo>
-                    <mn>{{calcs.correction.grass_offset}}'</mn>
-                    <mo>&equals;</mo>
-                    <mn>{{calcs.correction.distance_corrected_for_grass.ground_run()}}'</mn>
-                </math>
-            </li>
-            <li>
-                Total to Clear 50' Obs:
-                <math>
-                    <mn>{{calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()}}'</mn>
-                    <mo>&plus;</mo>
-                    <mn>{{calcs.correction.grass_offset}}'</mn>
-                    <mo>&equals;</mo>
-                    <mn>{{calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle()}}'</mn>
-                </math>
-            </li>
-        </ul>
+        {% call grass_correction::render(
+            calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle(),
+            0.07,
+            calcs.correction.grass_offset,
+            calcs.correction.distance_corrected_for_temperature.ground_run(),
+            calcs.correction.distance_corrected_for_grass.ground_run(),
+            calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle())
+        %}
     </body>
 </html>

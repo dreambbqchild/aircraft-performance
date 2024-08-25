@@ -1,0 +1,49 @@
+{% macro render(temperature_f, standard_temperature_f, temperature_f_diff_from_standard, interval, standard_temperature_correction_percentage, starting_ground_run, ending_ground_run, starting_clear_50_ft_obstacle, ending_clear_50_ft_obstacle) %}
+<ul>
+    <li>The difference between {{temperature_f}}°F and the standard temperature of {{standard_temperature_f}}°F is: 
+        <math>
+            <mn>{{temperature_f}}°F</mn>
+            <mo>&minus;</mo>
+            <mn>{{standard_temperature_f}}°F</mn>
+            <mo>&equals;</mo>
+            <mn>{{temperature_f_diff_from_standard}}°F</mn>
+        </math>
+    </li>
+    <li>
+        <math>
+            <mn>10%</mn>
+            <mo>&times;</mo>
+            <mrow>
+                <mo>(</mo>
+                <mfrac>
+                    <mn>{{temperature_f_diff_from_standard}}°F</mn>
+                    <mn>{{interval}}°F</mn>
+                </mfrac>
+                <mo>)</mo>
+            </mrow>
+            <mo>≈</mo>
+            <mn>{{"{:.2}"|format(standard_temperature_correction_percentage * 100.0)}}%</mn>
+        </math>
+    </li>
+    <li>
+        Ground Run:
+        <math>
+            <mn>{{starting_ground_run}}'</mn>
+            <mo>&times;</mo>
+            <mn>{{"{:.4}"|format(1.0 + standard_temperature_correction_percentage)}}</mn>
+            <mo>≈</mo>
+            <mn>{{ending_ground_run}}'</mn>
+        </math>
+    </li>
+    <li>
+        Clear 50' Obs:
+        <math>
+            <mn>{{starting_clear_50_ft_obstacle}}'</mn>
+            <mo>&times;</mo>
+            <mn>{{"{:.4}"|format(1.0 + standard_temperature_correction_percentage)}}</mn>
+            <mo>≈</mo>
+            <mn>{{ending_clear_50_ft_obstacle}}'</mn>
+        </math>
+    </li>
+</ul>
+{% endmacro %}
