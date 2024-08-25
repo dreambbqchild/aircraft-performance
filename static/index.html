@@ -2,8 +2,23 @@
 <html>
     <head>
         <title>Aircraft Performance Calcs</title>
+        <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
-        <a href="/performance/cessna150j">N50887</a><br/>
+        <h1>Departing From:</h1>
+        <input id="txtDeparture" type="text">
+        <input type="button" value="Get Airport" onclick="loadAirport(document.getElementById('txtDeparture').value, 'departure-airport')">
+        <iframe id="departure-airport" scrolling="no"></iframe>
+        <iframe id="departing-runway" scrolling="no"></iframe>
+        <iframe id="take-off" scrolling="no"></iframe>
+        <div id="arrive" style="display: none;">
+            <h1>Arriving At:</h1>
+            <input id="txtArrive" type="text">
+            <input type="button" value="Get Airport" onclick="loadAirport(document.getElementById('txtArrive').value, 'arrival-airport')">
+            <iframe id="arrival-airport" scrolling="no"></iframe>
+            <iframe id="arrival-runway" scrolling="no"></iframe>
+            <iframe id="landing" scrolling="no"></iframe>
+        </div>
     </body>
+    <script type="text/javascript" src="/scripts/main.js"></script>
 </html>

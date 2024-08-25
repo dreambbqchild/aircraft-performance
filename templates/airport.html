@@ -2,18 +2,29 @@
 <html>
     <head>
         <title>{{ airport.ident }} - {{ airport.name }}</title>
-        <style>
-            table, th, td { border: 1px solid; }
-            td {text-align: center;}
-        </style>
+        <link rel="stylesheet" href="/styles.css">
+        <script type="text/javascript" src="/scripts/child-main.js"></script>
+        <style>select, #custom-metar { width: 100% }</style>
     </head>
     <body>
-        <h1>{{ airport.ident }} - {{ airport.name }}</h1>
+        <h2>{{ airport.ident }} - {{ airport.name }}</h2>
+        <h3>METARs Over Last 24 Hours:</h3>
+
+        <select id="actual-metar">
+            <option value="">Choose an Actual METAR...</option>
+            {% for metar in metars %}
+                <option>{{ metar }}</option>
+            {% endfor %}
+        </select>
+        <p>- OR -</p>         
+        <input type="text" id="custom-metar" placeholder="Write Custom METAR">
+        <h3>Runways</h3>
         <table>
             <thead>
                 <tr>
                     <th>Select</th>
-                    <th>Identifier</th>
+                    <th>Runway</th>
+                    <th>Heading</th>
                     <th>Elevation</th>
                     <th>Surface</th>
                     <th>Is Grass</th>
@@ -26,6 +37,7 @@
                 <tr>
                     <td><input type="radio" name="runway" value="{{ runway.le_ident }}"></td>
                     <td data-ident="{{ runway.le_ident }}">{{ runway.le_ident }}</td>
+                    <td data-heading="{{ runway.le_heading }}">{{ runway.le_heading }}</td>
                     <td data-elevation="{{ runway.le_elevation }}">{{ runway.le_elevation }}'</td>
                     <td>{{ runway.surface }}</td>
                     <td data-is-grass="{{runway.is_grass}}">{{ runway.is_grass }}</td>
@@ -35,6 +47,7 @@
                 <tr>
                     <td><input type="radio" name="runway" value="{{ runway.he_ident }}"></td>
                     <td data-ident="{{ runway.he_ident }}">{{ runway.he_ident }}</td>
+                    <td data-heading="{{ runway.he_heading }}">{{ runway.he_heading }}</td>
                     <td data-elevation="{{ runway.he_elevation }}">{{ runway.he_elevation }}'</td>
                     <td>{{ runway.surface }}</td>
                     <td data-is-grass="{{runway.is_grass}}">{{ runway.is_grass }}</td>
@@ -44,30 +57,6 @@
                 {% endfor %}
             </tbody>
         </table>
-        <script>
-            let data = {};
-
-            for(const radio of document.querySelectorAll('input[type="radio"]')) {
-                radio.addEventListener('change', () => {
-                    const row = radio.parentElement.parentElement;
-                    const working = {};
-                    for(const child of row.childNodes) {
-                        if(!child.dataset)
-                            continue;
-
-                        for(let [key, value] of Object.entries(child.dataset)) {
-                            if(key === 'length' || key === 'displacedThreshold' || key === 'elevation')
-                                value = parseInt(value);
-                            else if(key === 'isGrass')
-                                value = value === 'true';
- 
-                            working[key] = value;
-                        }
-                    }
-
-                    data = working;
-                });
-            }
-        </script>
+        <script>collectAirportData();</script>
     </body>
 </html>

@@ -3,21 +3,23 @@
     <head>
         <title>{{action}} Performance Calcs</title>
         <script>
-            let data = {
-                headwind: {{ headwind_kts }},
-                temperature: {{ temperature_f }},
-                standardTemperature: {{ standard_temperature_f }}
-            };
+            if(parent && parent.loadPerformance)
+                parent.loadPerformance('{{action.to_lowercase()}}', {
+                    headwind: {{ headwind_kts }},
+                    elevation: {{ elevation }},
+                    temperature: {{ temperature_f }},
+                    standardTemperature: {{ standard_temperature_f }}
+            });
         </script>
+        <script type="text/javascript" src="/scripts/child-main.js"></script>
     </head>
-    <p>Conditions for {{action.to_lowercase()}} are:
-        <ul>
-            <li>Elevation: {{ elevation }}'
-            <li>Headwind: {{headwind_kts}}kts
-            <li>Temperature {{temperature_f}}°F
-            <li>Surface: {{ surface }}
-        </ul>
-        </p>
+    <h2>Conditions for {{action.to_lowercase()}} are:</h2>
+    <ul>
+        <li>Elevation: {{ elevation }}'
+        <li>Headwind: {{headwind_kts}}kts
+        <li>Temperature {{temperature_f}}°F
+        <li>Surface: {{ surface }}
+    </ul>
     <p>The standard temperature is <math>
         <mn>59°F</mn>
         <mo>&minus;</mo>

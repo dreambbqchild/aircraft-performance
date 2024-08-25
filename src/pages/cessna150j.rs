@@ -19,7 +19,7 @@ pub struct PerformanceParameters {
 }
 
 #[derive(Template)]
-#[template(path = "aircraft/cessna150j/takeoff.html")]
+#[template(path = "aircraft/cessna150j/take-off.html")]
 pub struct TakeOffTemplate {
     calcs: TakeOff,
     cessna: Cessna150J
