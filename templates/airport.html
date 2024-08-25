@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ airport.ident }} - {{ airport.name }}</title>
+        <style>
+            table, th, td { border: 1px solid; }
+            td {text-align: center;}
+        </style>
+    </head>
+    <body>
+        <h1>{{ airport.ident }} - {{ airport.name }}</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Identifier</th>
+                    <th>Elevation</th>
+                    <th>Surface</th>
+                    <th>Is Grass</th>
+                    <th>Length</th>
+                    <th>Displaced Threshold</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for runway in airport.runways %}
+                <tr>
+                    <td><input type="radio" name="runway" value="{{ runway.le_ident }}"></td>
+                    <td data-ident="{{ runway.le_ident }}">{{ runway.le_ident }}</td>
+                    <td data-elevation="{{ runway.le_elevation }}">{{ runway.le_elevation }}'</td>
+                    <td>{{ runway.surface }}</td>
+                    <td data-is-grass="{{runway.is_grass}}">{{ runway.is_grass }}</td>
+                    <td data-length="{{ runway.length }}">{{ runway.length }}'</td>
+                    <td data-displaced-threshold="{{ runway.le_displaced_threshold }}">{{ runway.le_displaced_threshold }}'</td>
+                </tr>
+                <tr>
+                    <td><input type="radio" name="runway" value="{{ runway.he_ident }}"></td>
+                    <td data-ident="{{ runway.he_ident }}">{{ runway.he_ident }}</td>
+                    <td data-elevation="{{ runway.he_elevation }}">{{ runway.he_elevation }}'</td>
+                    <td>{{ runway.surface }}</td>
+                    <td data-is-grass="{{runway.is_grass}}">{{ runway.is_grass }}</td>
+                    <td data-length="{{ runway.length }}">{{ runway.length }}'</td>
+                    <td data-displaced-threshold="{{ runway.he_displaced_threshold }}">{{ runway.he_displaced_threshold }}'</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <script>
+            let data = {};
+
+            for(const radio of document.querySelectorAll('input[type="radio"]')) {
+                radio.addEventListener('change', () => {
+                    const row = radio.parentElement.parentElement;
+                    const working = {};
+                    for(const child of row.childNodes) {
+                        if(!child.dataset)
+                            continue;
+
+                        for(let [key, value] of Object.entries(child.dataset)) {
+                            if(key === 'length' || key === 'displacedThreshold' || key === 'elevation')
+                                value = parseInt(value);
+                            else if(key === 'isGrass')
+                                value = value === 'true';
+ 
+                            working[key] = value;
+                        }
+                    }
+
+                    data = working;
+                });
+            }
+        </script>
+    </body>
+</html>

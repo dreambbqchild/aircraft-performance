@@ -1,0 +1,3 @@
+[submodule "Airports"]
+	path = Airports
+	url = https://github.com/mwgg/Airports.git

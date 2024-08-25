@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Takeoff</title>
+        <style>
+            table, th, td { border: 1px solid; }
+            td {text-align: center;}
+        </style>
+    </head>
+    <body>
+        <h2>Take Off</h2>
+        <p>The headwind of {{cessna.headwind_kts}} kts is {{"{:.2}"|format(cessna.headwind_tween_percentage * 100.0)}}% between the lower bound of {{cessna.headwinds.lower_value}} kts and the upper bound of {{cessna.headwinds.upper_value}}kts.</p>
+        <p>
+            The relevant distances are then:            
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th colspan="2">{{cessna.atmosphere_bounds.lower.altitude}}' at {{cessna.atmosphere_bounds.lower.temperature}}°F</th>
+                        <th colspan="2">{{cessna.elevation_ft}}' at {{cessna.standard_temperature_f}}°F</th>
+                        <th colspan="2">{{cessna.atmosphere_bounds.upper.altitude}}' at {{cessna.atmosphere_bounds.upper.temperature}}°F</th>
+                    </tr>
+                    <tr>
+                        <th>Head Wind</th>
+                        <th>Ground Run</th>
+                        <th>Total to Clear 50' Obs</th>
+                        <th>Ground Run</th>
+                        <th>Total to Clear 50' Obs</th>
+                        <th>Ground Run</th>
+                        <th>Total to Clear 50' Obs</th>             
+                    </tr>
+                </thead>
+                <tbody>
+                    {%for row in calcs.takeoff_distances %}
+                    <tr>
+                        <td>{{row.wind_speed.expect("wind_speed to be set")}} kts</td>
+                        <td>{{row.lower_bound.ground_run()}}'</td>
+                        <td>{{row.lower_bound.clear_50_ft_obstacle()}}'</td>
+                        <td>
+                            {% match row.middle_value %}
+                                {% when Some with (val) %}
+                                    {{ val.ground_run() }}'
+                                {% when None %}
+                            {% endmatch %}
+                        </td>
+                        <td>{% match row.middle_value %}
+                                {% when Some with (val) %}
+                                    {{ val.clear_50_ft_obstacle() }}'
+                                {% when None %}
+                        {% endmatch %}</td>
+                        <td>{{row.upper_bound.ground_run()}}'</td>
+                        <td>{{row.upper_bound.clear_50_ft_obstacle()}}'</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </p>
+        <h3>Increase distances 10% for each 35°F in temperature above standard for the particular altitude.</h3>
+        <ul>
+            <li>The difference between {{cessna.temperature_f}}°F and the standard temperature of {{cessna.standard_temperature_f}}°F is: 
+                <math>
+                    <mn>{{cessna.temperature_f}}°F</mn>
+                    <mo>&minus;</mo>
+                    <mn>{{cessna.standard_temperature_f}}°F</mn>
+                    <mo>&equals;</mo>
+                    <mn>{{cessna.temperature_f_diff_from_standard}}°F</mn>
+                </math>
+            </li>
+            <li>
+                <math>
+                    <mn>10%</mn>
+                    <mo>&times;</mo>
+                    <mrow>
+                        <mo>(</mo>
+                        <mfrac>
+                            <mn>{{cessna.temperature_f_diff_from_standard}}°F</mn>
+                            <mn>35°F</mn>
+                        </mfrac>
+                        <mo>)</mo>
+                    </mrow>
+                    <mo>≈</mo>
+                    <mn>{{"{:.2}"|format(calcs.correction.standard_temperature_correction_percentage * 100.0)}}%</mn>
+                </math>
+            </li>
+            <li>
+                Ground Run:
+                <math>
+                    <mn>{{calcs.takeoff_distances[1].middle_value.unwrap().ground_run()}}'</mn>
+                    <mo>&times;</mo>
+                    <mn>{{"{:.4}"|format(1.0 + calcs.correction.standard_temperature_correction_percentage)}}</mn>
+                    <mo>≈</mo>
+                    <mn>{{calcs.correction.distance_corrected_for_temperature.ground_run()}}'</mn>
+                </math>
+            </li>
+            <li>
+                Clear 50' Obs:
+                <math>
+                    <mn>{{calcs.takeoff_distances[1].middle_value.unwrap().clear_50_ft_obstacle()}}'</mn>
+                    <mo>&times;</mo>
+                    <mn>{{"{:.4}"|format(1.0 + calcs.correction.standard_temperature_correction_percentage)}}</mn>
+                    <mo>≈</mo>
+                    <mn>{{calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()}}'</mn>
+                </math>
+            </li>
+        </ul>
+        <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 7% of the "total to clear 50 ft obstacle") figure.</h3>
+        <ul>
+            <li>
+                <math>
+                    <mn>{{calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()}}'</mn>
+                    <mo>&times;</mo>
+                    <mn>0.07</mn>
+                    <mo>≈</mo>
+                    <mn>{{calcs.correction.grass_offset}}'</mn>
+                </math>
+            </li>
+            <li>
+                Ground Run:
+                <math>
+                    <mn>{{calcs.correction.distance_corrected_for_temperature.ground_run()}}'</mn>
+                    <mo>&plus;</mo>
+                    <mn>{{calcs.correction.grass_offset}}'</mn>
+                    <mo>&equals;</mo>
+                    <mn>{{calcs.correction.distance_corrected_for_grass.ground_run()}}'</mn>
+                </math>
+            </li>
+            <li>
+                Ground Run:
+                <math>
+                    <mn>{{calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()}}'</mn>
+                    <mo>&plus;</mo>
+                    <mn>{{calcs.correction.grass_offset}}'</mn>
+                    <mo>&equals;</mo>
+                    <mn>{{calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle()}}'</mn>
+                </math>
+            </li>
+        </ul>
+    </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{action}} Performance Calcs</title>
+        <script>
+            let data = {
+                headwind: {{ headwind_kts }},
+                temperature: {{ temperature_f }},
+                standardTemperature: {{ standard_temperature_f }}
+            };
+        </script>
+    </head>
+    <p>Conditions for {{action.to_lowercase()}} are:
+        <ul>
+            <li>Elevation: {{ elevation }}'
+            <li>Headwind: {{headwind_kts}}kts
+            <li>Temperature {{temperature_f}}°F
+            <li>Surface: {{ surface }}
+        </ul>
+        </p>
+    <p>The standard temperature is <math>
+        <mn>59°F</mn>
+        <mo>&minus;</mo>
+        <mrow>
+            <mo>(</mo>
+            <mfrac>
+                <mn>{{elevation}}'</mn>
+                <mn>1000'</mn>
+            </mfrac>
+            <mo>&times;</mo>
+            <mn>3.5°F</mn>
+            <mo>)</mo>
+        </mrow>
+        <mo>≈</mo>
+        <mn>{{standard_temperature_f}}°F</mn>
+    </math>, which makes the difference between standard and actual <math>
+        <mn>{{temperature_f}}°F</mn>
+        <mo>&minus;</mo>
+        <mn>{{standard_temperature_f}}°F</mn>
+        <mo>=</mo>
+        <mn>{{ temperature_diff_from_standard }}°F</mn>
+    </math>.</p>
+</html>
