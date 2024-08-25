@@ -1,22 +1,18 @@
 {% macro render(actual, lower, upper, percent, unit) %}
 <math>
-    <mrow>
-        <mo>(</mo>
-        <mfrac>
-            <mrow>
-                <mn>{{actual}}{{unit}}</mn>
-                <mo>&minus;</mo>
-                <mn>{{lower}}{{unit}}</mn>
-            </mrow>
-            <mrow>
-                <mn>{{upper}}{{unit}}</mn>
-                <mo>&minus;</mo>
-                <mn>{{lower}}{{unit}}</mn>
-            </mrow>
-        </mfrac>
-        <mo>)</mo>
-        <mo>≈</mo>
-        <mn>{{"{:.0}"|format(percent * 100.0)}}%</mn>
-    </mrow>
+    <mfrac>
+        <mrow>
+            <mn>{{actual}}{{unit}}</mn>
+            <mo>&minus;</mo>
+            <mn>{{lower}}{{unit}}</mn>
+        </mrow>
+        <mrow>
+            <mn>{{upper}}{{unit}}</mn>
+            <mo>&minus;</mo>
+            <mn>{{lower}}{{unit}}</mn>
+        </mrow>
+    </mfrac>
+    <mo>≈</mo>
+    <mn>{{"{:.0}"|format(percent * 100.0)}}%</mn>
 </math>
 {% endmacro %}

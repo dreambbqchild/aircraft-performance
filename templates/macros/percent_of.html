@@ -1,0 +1,14 @@
+{% macro render(percent, lower, upper, unit) %}
+<math>
+    <mn>{{"{:.2}"|format(percent)}}</mn>
+    <mo>&times;</mo>
+    <mo>(</mo>
+    <mn>{{upper}}{{unit}}</mn>
+    <mn>&minus;</mn>
+    <mn>{{lower}}{{unit}}</mn>
+    <mo>)</mo>
+    <mo>&plus;</mo>
+    <mn>{{lower}}{{unit}}</mn>
+    <mo>&equals;</mo>
+</math>
+{% endmacro %}

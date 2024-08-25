@@ -201,9 +201,19 @@ impl Cessna150J {
             self.headwind_tween_percentage.percent_of_i16(lower_wind_lower_altitude.clear_50_ft_obstacle(), upper_wind_lower_altitude.clear_50_ft_obstacle())
         );
 
+        let lower_middle_tween = Distance::new_from_f64(
+            self.headwind_tween_percentage.percent_of_i16(lower_wind_lower_altitude.ground_run(), lower_wind_upper_altitude.ground_run()),
+            self.headwind_tween_percentage.percent_of_i16(lower_wind_lower_altitude.clear_50_ft_obstacle(), lower_wind_upper_altitude.clear_50_ft_obstacle())
+        );
+
         let upper_tween = Distance::new_from_f64(
             self.headwind_tween_percentage.percent_of_i16(lower_wind_upper_altitude.ground_run(), upper_wind_upper_altitude.ground_run()),
             self.headwind_tween_percentage.percent_of_i16(lower_wind_upper_altitude.clear_50_ft_obstacle(), upper_wind_upper_altitude.clear_50_ft_obstacle())
+        );
+
+        let upper_middle_tween = Distance::new_from_f64(
+            self.headwind_tween_percentage.percent_of_i16(upper_wind_lower_altitude.ground_run(), upper_wind_upper_altitude.ground_run()),
+            self.headwind_tween_percentage.percent_of_i16(upper_wind_lower_altitude.clear_50_ft_obstacle(), upper_wind_upper_altitude.clear_50_ft_obstacle())
         );
 
         let distance_at_elevation = Distance::new_from_f64(
@@ -212,9 +222,9 @@ impl Cessna150J {
         );
 
         let takeoff_distances = vec![
-            PerformanceRow::new_labeled(self.headwinds.lower_value, lower_wind_lower_altitude, None, lower_wind_upper_altitude),
-            PerformanceRow::new_labeled(self.headwind_kts, lower_tween, Some(distance_at_elevation), upper_tween),
-            PerformanceRow::new_labeled(self.headwinds.upper_value, upper_wind_lower_altitude, None, upper_wind_upper_altitude)
+            PerformanceRow::new_labeled(self.headwinds.lower_value, lower_wind_lower_altitude, lower_middle_tween, lower_wind_upper_altitude),
+            PerformanceRow::new_labeled(self.headwind_kts, lower_tween, distance_at_elevation, upper_tween),
+            PerformanceRow::new_labeled(self.headwinds.upper_value, upper_wind_lower_altitude, upper_middle_tween, upper_wind_upper_altitude)
         ];
 
         let standard_temperature_correction_interval = 35.0;
@@ -245,7 +255,7 @@ impl Cessna150J {
             self.altitude_tween_percentage.percent_of_i16(lower_altitude.clear_50_ft_obstacle(), upper_altitude.clear_50_ft_obstacle())
         );
 
-        let landing_distances = PerformanceRow::new_unlabeled(lower_altitude, Some(distance_at_elevation), upper_altitude);
+        let landing_distances = PerformanceRow::new_unlabeled(lower_altitude, distance_at_elevation, upper_altitude);
 
         let headwind_correction_percentage = (self.headwind_kts as f64 / 4.0) * 0.1;
         let distance_with_headwind = Distance::new_from_f64(

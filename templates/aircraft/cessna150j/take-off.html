@@ -1,4 +1,5 @@
 {%- import "macros/percent_between.html" as percent_between -%}
+{%- import "macros/percent_of.html" as percent_of -%}
 {%- import "macros/cessna150j/temperature_correction.html" as temperature_correction -%}
 {%- import "macros/cessna150j/grass_correction.html" as grass_correction -%}
 <!DOCTYPE html>
@@ -17,7 +18,12 @@
         </p>
         <p>
             The headwind of {{cessna.headwind_kts}} kts is
-            {% call percent_between::render(cessna.headwind_kts, cessna.headwinds.lower_value, cessna.headwinds.upper_value, cessna.headwind_tween_percentage, " kts") %}
+            {% call percent_between::render(cessna.headwind_kts, 
+                cessna.headwinds.lower_value, 
+                cessna.headwinds.upper_value, 
+                cessna.headwind_tween_percentage, 
+                " kts") 
+            %}
             between the lower bound of {{cessna.headwinds.lower_value}} kts and the upper bound of {{cessna.headwinds.upper_value}}kts.
         </p>
         <p>
@@ -44,22 +50,86 @@
                     {%for row in calcs.takeoff_distances %}
                     <tr>
                         <td>{{row.wind_speed.expect("wind_speed to be set")}} kts</td>
-                        <td>{{row.lower_bound.ground_run()}}'</td>
-                        <td>{{row.lower_bound.clear_50_ft_obstacle()}}'</td>
                         <td>
-                            {% match row.middle_value %}
-                                {% when Some with (val) %}
-                                    {{ val.ground_run() }}'
-                                {% when None %}
-                            {% endmatch %}
+                            {% if row.wind_speed.unwrap() == cessna.headwind_kts && calcs.takeoff_distances.len() == 3 %}
+                                {% call percent_of::render(
+                                    cessna.headwind_tween_percentage,
+                                    calcs.takeoff_distances[0].lower_bound.ground_run(), 
+                                    calcs.takeoff_distances[2].lower_bound.ground_run(), 
+                                    "'")
+                                %}
+                            {% endif %}
+                            {{row.lower_bound.ground_run()}}'
                         </td>
-                        <td>{% match row.middle_value %}
-                                {% when Some with (val) %}
-                                    {{ val.clear_50_ft_obstacle() }}'
-                                {% when None %}
-                        {% endmatch %}</td>
-                        <td>{{row.upper_bound.ground_run()}}'</td>
-                        <td>{{row.upper_bound.clear_50_ft_obstacle()}}'</td>
+                        <td>
+                            {% if row.wind_speed.unwrap() == cessna.headwind_kts && calcs.takeoff_distances.len() == 3 %}
+                                {% call percent_of::render(
+                                    cessna.headwind_tween_percentage,
+                                    calcs.takeoff_distances[0].lower_bound.clear_50_ft_obstacle(), 
+                                    calcs.takeoff_distances[2].lower_bound.clear_50_ft_obstacle(), 
+                                    "'")
+                                %}
+                            {% endif %}
+                            {{row.lower_bound.clear_50_ft_obstacle()}}'
+                        </td>
+                        <td>
+                            {% if row.wind_speed.unwrap() == cessna.headwind_kts && calcs.takeoff_distances.len() == 3 %}
+                                {% call percent_of::render(
+                                    cessna.headwind_tween_percentage,
+                                    calcs.takeoff_distances[0].middle_value.ground_run(), 
+                                    calcs.takeoff_distances[2].middle_value.ground_run(), 
+                                    "'")
+                                %}
+                            {% else %}
+                                    {% call percent_of::render(
+                                        cessna.altitude_tween_percentage,
+                                        row.lower_bound.ground_run(), 
+                                        row.upper_bound.ground_run(), 
+                                        "'")
+                                    %}
+                            {% endif %}
+                            {{row.middle_value.ground_run()}}'
+                        </td>
+                        <td>
+                            {% if row.wind_speed.unwrap() == cessna.headwind_kts && calcs.takeoff_distances.len() == 3 %}
+                                {% call percent_of::render(
+                                    cessna.headwind_tween_percentage,
+                                    calcs.takeoff_distances[0].middle_value.clear_50_ft_obstacle(), 
+                                    calcs.takeoff_distances[2].middle_value.clear_50_ft_obstacle(), 
+                                    "'")
+                                %}
+                            {% else %}
+                                {% call percent_of::render(
+                                    cessna.altitude_tween_percentage,
+                                    row.lower_bound.clear_50_ft_obstacle(), 
+                                    row.upper_bound.clear_50_ft_obstacle(), 
+                                    "'")
+                                %}
+                            {% endif %}
+                            {{row.middle_value.clear_50_ft_obstacle()}}'
+                        </td>
+                        <td>
+                            {% if row.wind_speed.unwrap() == cessna.headwind_kts && calcs.takeoff_distances.len() == 3 %}
+                                {% call percent_of::render(
+                                    cessna.headwind_tween_percentage,
+                                    calcs.takeoff_distances[0].upper_bound.ground_run(), 
+                                    calcs.takeoff_distances[2].upper_bound.ground_run(), 
+                                    "'")
+                                %}
+                            {% endif %}
+                            {{row.upper_bound.ground_run()}}'
+                        </td>
+                        <td>
+                            {% if row.wind_speed.unwrap() == cessna.headwind_kts && calcs.takeoff_distances.len() == 3 %}
+                                {% call percent_of::render(
+                                    cessna.headwind_tween_percentage,
+                                    calcs.takeoff_distances[0].upper_bound.clear_50_ft_obstacle(), 
+                                    calcs.takeoff_distances[2].upper_bound.clear_50_ft_obstacle(), 
+                                    "'")
+                                %}
+                            {% endif %}
+                            {{row.upper_bound.clear_50_ft_obstacle()}}'
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -72,9 +142,9 @@
             cessna.temperature_f_diff_from_standard, 
             35, 
             calcs.correction.standard_temperature_correction_percentage, 
-            calcs.takeoff_distances[1].middle_value.unwrap().ground_run(), 
+            calcs.takeoff_distances[1].middle_value.ground_run(), 
             calcs.correction.distance_corrected_for_temperature.ground_run(), 
-            calcs.takeoff_distances[1].middle_value.unwrap().clear_50_ft_obstacle(), 
+            calcs.takeoff_distances[1].middle_value.clear_50_ft_obstacle(), 
             calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()) 
         %}
         <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 7% of the "Total to Clear 50' Obstacle") figure.</h3>

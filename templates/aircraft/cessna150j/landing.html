@@ -1,4 +1,5 @@
 {%- import "macros/percent_between.html" as percent_between -%}
+{%- import "macros/percent_of.html" as percent_of -%}
 {%- import "macros/cessna150j/temperature_correction.html" as temperature_correction -%}
 {%- import "macros/cessna150j/grass_correction.html" as grass_correction -%}
 <!DOCTYPE html>
@@ -37,8 +38,24 @@
                     <tr>
                         <td>{{calcs.landing_distances.lower_bound.ground_run()}}'</td>
                         <td>{{calcs.landing_distances.lower_bound.clear_50_ft_obstacle()}}'</td>
-                        <td>{{calcs.landing_distances.middle_value.expect("middle_value to be set").ground_run() }}'</td>
-                        <td>{{calcs.landing_distances.middle_value.expect("middle_value to be set").clear_50_ft_obstacle() }}'</td>
+                        <td>
+                            {% call percent_of::render(
+                                cessna.altitude_tween_percentage,
+                                calcs.landing_distances.lower_bound.ground_run(), 
+                                calcs.landing_distances.upper_bound.ground_run(), 
+                                "'")
+                            %}
+                            {{calcs.landing_distances.middle_value.ground_run() }}'
+                        </td>
+                        <td>
+                            {% call percent_of::render(
+                                cessna.altitude_tween_percentage,
+                                calcs.landing_distances.lower_bound.clear_50_ft_obstacle(), 
+                                calcs.landing_distances.upper_bound.clear_50_ft_obstacle(), 
+                                "'")
+                            %}
+                            {{calcs.landing_distances.middle_value.clear_50_ft_obstacle() }}'
+                        </td>
                         <td>{{calcs.landing_distances.upper_bound.ground_run()}}'</td>
                         <td>{{calcs.landing_distances.upper_bound.clear_50_ft_obstacle()}}'</td>
                     </tr>
@@ -66,7 +83,7 @@
             <li>
                 Ground Run:
                 <math>
-                    <mn>{{calcs.landing_distances.middle_value.expect("middle_value to be set").ground_run()}}</mn>
+                    <mn>{{calcs.landing_distances.middle_value.ground_run()}}</mn>
                     <mn>&times;</mn>
                     <mo>(</mo>
                     <mn>1</mn>
@@ -80,7 +97,7 @@
             <li>
                 Clear 50' Obs:
                 <math>
-                    <mn>{{calcs.landing_distances.middle_value.expect("middle_value to be set").clear_50_ft_obstacle()}}</mn>
+                    <mn>{{calcs.landing_distances.middle_value.clear_50_ft_obstacle()}}</mn>
                     <mn>&times;</mn>
                     <mo>(</mo>
                     <mn>1</mn>
