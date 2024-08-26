@@ -31,3 +31,16 @@ impl<T> IntoResponse for HtmlTemplate<T> where T: Template,
         }
     }
 }
+#[derive(Template)]
+#[template(path = "error.html")]
+pub struct ErrorTemplate {
+    message: String
+}
+
+impl ErrorTemplate{
+    pub fn new(message: String) -> Self {
+        ErrorTemplate {
+            message
+        }
+    }
+}

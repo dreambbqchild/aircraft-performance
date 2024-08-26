@@ -10,6 +10,7 @@
         <h2>{{ airport.ident }} - {{ airport.name }}</h2>
         <h3>METARs Over Last 24 Hours:</h3>
 
+        {% if metars.len() > 0 %}
         <select id="actual-metar">
             <option value="">Choose an Actual METAR...</option>
             {% for metar in metars %}
@@ -17,6 +18,7 @@
             {% endfor %}
         </select>
         <p>- OR -</p>         
+        {% endif %}
         <input type="text" id="custom-metar" placeholder="Write Custom METAR">
         <h3>Runways</h3>
         <table>

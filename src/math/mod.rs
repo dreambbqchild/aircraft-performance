@@ -72,7 +72,10 @@ impl FloatingCalcs for f64 {
     fn percent(&self, lower_bound: f64, upper_bound: f64) -> f64 {
         let diff = upper_bound - lower_bound;
         let actual_no_offset = self - lower_bound;
-        actual_no_offset as f64 / diff
+        match diff {
+            0.0 => 0.0,
+            _ => actual_no_offset as f64 / diff
+        }
     }
 
     fn percent_of(&self, lower_bound: f64, upper_bound: f64) -> f64 {

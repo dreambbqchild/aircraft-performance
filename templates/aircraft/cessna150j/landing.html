@@ -123,14 +123,16 @@
             calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()) 
         %}
 
-        <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 20% of the "Total to Clear 50' Obstacle") figure.</h3>
-        {% call grass_correction::render(
-            calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle(),
-            0.2,
-            calcs.correction.grass_offset,
-            calcs.correction.distance_corrected_for_temperature.ground_run(),
-            calcs.correction.distance_corrected_for_grass.ground_run(),
-            calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle())
-        %}
+        {% if is_grass %}
+            <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 20% of the "Total to Clear 50' Obstacle") figure.</h3>
+            {% call grass_correction::render(
+                calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle(),
+                0.2,
+                calcs.correction.grass_offset,
+                calcs.correction.distance_corrected_for_temperature.ground_run(),
+                calcs.correction.distance_corrected_for_grass.ground_run(),
+                calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle())
+            %}
+        {% endif %}
     </body>
 </html>

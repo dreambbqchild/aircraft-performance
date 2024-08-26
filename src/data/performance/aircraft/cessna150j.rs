@@ -1,4 +1,8 @@
-use crate::{data::performance::{atmosphere_bounds::{AtmosphereBounds, AtmosphereDef}, distance::Distance, headwinds::Headwinds, performance_row::PerformanceRow}, math::{FloatingCalcs, Velocity}};
+use crate::{
+    data::performance::{atmosphere_bounds::{AtmosphereBounds, AtmosphereDef}, 
+    distance::Distance, headwinds::Headwinds, performance_row::PerformanceRow}, 
+    math::{FloatingCalcs, Velocity}
+};
 
 pub enum Headwind {
     WindCalm = 0,
@@ -173,7 +177,7 @@ impl Cessna150J {
     }
     
     fn calc_standard_temperature_correction_percentage(&self, standard_temperature_correction_interval: f64) -> f64 {
-        0.1 * (self.temperature_f_diff_from_standard as f64 / standard_temperature_correction_interval)
+        (0.0f64).max(0.1 * (self.temperature_f_diff_from_standard as f64 / standard_temperature_correction_interval))
     }
 
     fn calc_distance_corrected_for_temperature(&self, distance: Distance, standard_temperature_correction_percentage: f64) -> Distance {

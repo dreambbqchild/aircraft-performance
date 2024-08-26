@@ -123,14 +123,25 @@ pub trait AirportHash {
 impl AirportHash for HashMap<String, Airport> {
     fn load_by_identifier<S: AsRef<str>>(&self, identifier: S) -> Option<&Airport> {
         let identifier_ref = identifier.as_ref();
+
+        if identifier_ref.len() < 3
+        {
+            return None;
+        }
+
         if self.contains_key(identifier_ref) {
             self.get(identifier_ref)
         }
         else {
             let short_identifier = &identifier_ref[1..];
+            let long_identifier = format!("K{identifier_ref}");
             if self.contains_key(short_identifier) {
                 self.get(short_identifier)
-            } else {
+            }
+            else if self.contains_key(&long_identifier) {
+                self.get(&long_identifier)
+            } 
+            else {
                 None
             }
         }
