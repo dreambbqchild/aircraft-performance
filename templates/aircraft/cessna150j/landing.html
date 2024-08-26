@@ -110,18 +110,20 @@
             </li>
         </ul>
 
-        <h3>Increase distances 10% for each 60°F in temperature above standard for the particular altitude.</h3>
-        {% call temperature_correction::render(
-            cessna.temperature_f, 
-            cessna.standard_temperature_f, 
-            cessna.temperature_f_diff_from_standard, 
-            60, 
-            calcs.correction.standard_temperature_correction_percentage, 
-            calcs.distance_with_headwind.ground_run(), 
-            calcs.correction.distance_corrected_for_temperature.ground_run(), 
-            calcs.distance_with_headwind.clear_50_ft_obstacle(), 
-            calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()) 
-        %}
+        {% if calcs.correction.standard_temperature_correction_percentage != 0.0 %}
+            <h3>Increase distances 10% for each 60°F in temperature above standard for the particular altitude.</h3>
+            {% call temperature_correction::render(
+                cessna.temperature_f, 
+                cessna.standard_temperature_f, 
+                cessna.temperature_f_diff_from_standard, 
+                60, 
+                calcs.correction.standard_temperature_correction_percentage, 
+                calcs.distance_with_headwind.ground_run(), 
+                calcs.correction.distance_corrected_for_temperature.ground_run(), 
+                calcs.distance_with_headwind.clear_50_ft_obstacle(), 
+                calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle()) 
+            %}
+        {% endif %}
 
         {% if is_grass %}
             <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 20% of the "Total to Clear 50' Obstacle") figure.</h3>

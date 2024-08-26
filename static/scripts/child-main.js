@@ -25,7 +25,9 @@ function collectAirportData() {
     });
 
     customMetar.addEventListener('blur', () => {
-        actualMetar.selectedIndex = 0;
+        if(actualMetar)
+            actualMetar.selectedIndex = 0;
+        
         data.metar = customMetar.value;
         trySendData();
     });
