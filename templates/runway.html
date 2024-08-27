@@ -16,10 +16,14 @@
     </head>
     <h2>Conditions for {{action.to_lowercase()}} are:</h2>
     <ul>
-        <li>Elevation: {{ elevation }}'
-        <li>Headwind: {{headwind_kts}}kts
-        <li>Temperature {{temperature_f}}°F
-        <li>Surface: {{ surface }}
+        <li>Elevation: {{ elevation }}'</li>
+        {% if headwind_kts >= 0 %}
+            <li>Headwind: {{headwind_kts}} kts</li>
+        {% else %}
+            <li>Tailwind: {{headwind_kts.abs()}} kts</li>
+        {% endif %}
+        <li>Temperature {{temperature_f}}°F</li>
+        <li>Surface: {{ surface }}</li>
     </ul>
     <p>The standard temperature is <math>
         <mn>59°F</mn>

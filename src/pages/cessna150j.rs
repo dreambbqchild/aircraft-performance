@@ -1,5 +1,5 @@
 use askama::Template;
-use axum::{extract::Query, response::IntoResponse};
+use axum::{extract::Query, response::{Html, IntoResponse, Response}};
 use serde::Deserialize;
 
 use crate::{
@@ -7,7 +7,7 @@ use crate::{
     math::Velocity
 };
 
-use super::HtmlTemplate;
+use super::ErrorTemplate;
 
 #[derive(Deserialize)]
 pub struct PerformanceParameters {
@@ -26,18 +26,28 @@ pub struct TakeOffTemplate {
     cessna: Cessna150J
 }
 
-pub async fn template_for_take_off(parameters: Query<PerformanceParameters>) -> impl IntoResponse {
-    let headwind = Velocity::Knots(parameters.headwind_kts);
-    let cessna = Cessna150J::new(headwind, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f);
-    let calcs = cessna.calc_take_off();
+fn get_error_response(parameters: &Query<PerformanceParameters>) -> Response {
+    let tailwind = parameters.headwind_kts.abs();
+    let template = ErrorTemplate::new(format!("Tailind of {tailwind} kts detected. unable to compute"));
+    Html(template.render().unwrap()).into_response()
+}
 
-    let template = TakeOffTemplate {
-        is_grass: match parameters.is_grass { Some(value) => value, None => false },
-        calcs,
-        cessna
-    };
+pub async fn template_for_take_off(parameters: Query<PerformanceParameters>) -> Response {
+    if parameters.headwind_kts < 0 {
+        get_error_response(&parameters)
+    } else {
+        let headwind = Velocity::Knots(parameters.headwind_kts);
+        let cessna = Cessna150J::new(headwind, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f);
+        let calcs = cessna.calc_take_off();
 
-    HtmlTemplate(template)
+        let template = TakeOffTemplate {
+            is_grass: match parameters.is_grass { Some(value) => value, None => false },
+            calcs,
+            cessna
+        };
+
+        Html(template.render().unwrap()).into_response()
+    }
 }
 
 #[derive(Template)]
@@ -48,16 +58,20 @@ pub struct LandingTemplate {
     cessna: Cessna150J
 }
 
-pub async fn template_for_landing(parameters: Query<PerformanceParameters>) -> impl IntoResponse {
-    let headwind = Velocity::Knots(parameters.headwind_kts);
-    let cessna = Cessna150J::new(headwind, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f);
-    let calcs = cessna.calc_landing();
+pub async fn template_for_landing(parameters: Query<PerformanceParameters>) -> Response {
+    if parameters.headwind_kts < 0 {
+        get_error_response(&parameters)
+    } else {
+        let headwind = Velocity::Knots(parameters.headwind_kts);
+        let cessna = Cessna150J::new(headwind, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f);
+        let calcs = cessna.calc_landing();
 
-    let template = LandingTemplate {
-        is_grass: match parameters.is_grass { Some(value) => value, None => false },
-        calcs,
-        cessna
-    };
+        let template = LandingTemplate {
+            is_grass: match parameters.is_grass { Some(value) => value, None => false },
+            calcs,
+            cessna
+        };
 
-    HtmlTemplate(template)
+        Html(template.render().unwrap()).into_response()
+    }
 }
