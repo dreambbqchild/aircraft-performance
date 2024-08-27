@@ -1,14 +1,5 @@
 {% macro render(temperature_f, standard_temperature_f, temperature_f_diff_from_standard, interval, standard_temperature_correction_percentage, starting_ground_run, ending_ground_run, starting_clear_50_ft_obstacle, ending_clear_50_ft_obstacle) %}
 <ul>
-    <li>The difference between {{temperature_f}}°F and the standard temperature of {{standard_temperature_f}}°F is: 
-        <math>
-            <mn>{{temperature_f}}°F</mn>
-            <mo>&minus;</mo>
-            <mn>{{standard_temperature_f}}°F</mn>
-            <mo>&equals;</mo>
-            <mn>{{temperature_f_diff_from_standard}}°F</mn>
-        </math>
-    </li>
     <li>
         <math>
             <mn>10%</mn>
