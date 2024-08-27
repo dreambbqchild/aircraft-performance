@@ -24,7 +24,7 @@ function loadRunway(data) {
 
 function loadPerformance(action, data) {
     const id = action === 'take off' ? 'take-off' : 'landing';
-    const {elevation, headwind, standardTemperature, temperature} = data; 
-    iframeRegistry[id].src = `/aircraft/cessna150j/${id}?elevation_ft=${elevation}&headwind_kts=${headwind}&standard_temperature_f=${standardTemperature}&temperature_f=${temperature}`;
+    const {elevation, headwind, standardTemperature, temperature, isGrass} = data; 
+    iframeRegistry[id].src = `/aircraft/cessna150j/${id}?elevation_ft=${elevation}&headwind_kts=${headwind}&standard_temperature_f=${standardTemperature}&temperature_f=${temperature}&is_grass=${isGrass}`;
     arrive.style.display = '';
 }

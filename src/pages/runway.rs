@@ -21,6 +21,7 @@ pub struct AtmosphericConditions {
 pub struct RunwayTemplate {
     action: String,
     surface: String,
+    is_grass: bool,
     elevation: i16,
     headwind_kts: i16,
     standard_temperature_f: i16,
@@ -42,6 +43,7 @@ pub async fn template(conditions: Query<AtmosphericConditions>) -> impl IntoResp
     let template = RunwayTemplate {
         action: if is_takeoff { "Take Off".to_string() } else { "Landing".to_string()  },
         surface: if is_grass {"grass".to_string() } else { "pavement".to_string() },
+        is_grass,
         elevation: conditions.elevation,
         headwind_kts: headwind.knots().expect("To convert to knots"),
         standard_temperature_f,
