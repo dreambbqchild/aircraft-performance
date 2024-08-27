@@ -18,49 +18,69 @@
         </p>
         <p>
             The relevant distances are then:
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2">{{cessna.atmosphere_bounds.lower.altitude}}' at {{cessna.atmosphere_bounds.lower.temperature}}°F</th>
-                        <th colspan="2">{{cessna.elevation_ft}}' at {{cessna.standard_temperature_f}}°F</th>
-                        <th colspan="2">{{cessna.atmosphere_bounds.upper.altitude}}' at {{cessna.atmosphere_bounds.upper.temperature}}°F</th>
-                    </tr>
-                    <tr>
-                        <th>Ground Run</th>
-                        <th>Total to Clear 50' Obs</th>
-                        <th>Ground Run</th>
-                        <th>Total to Clear 50' Obs</th>
-                        <th>Ground Run</th>
-                        <th>Total to Clear 50' Obs</th>             
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>{{calcs.landing_distances.lower_bound.ground_run()}}'</td>
-                        <td>{{calcs.landing_distances.lower_bound.clear_50_ft_obstacle()}}'</td>
-                        <td>
-                            {% call percent_of::render(
-                                cessna.altitude_tween_percentage,
-                                calcs.landing_distances.lower_bound.ground_run(), 
-                                calcs.landing_distances.upper_bound.ground_run(), 
-                                "'")
-                            %}
-                            {{calcs.landing_distances.middle_value.ground_run() }}'
-                        </td>
-                        <td>
-                            {% call percent_of::render(
-                                cessna.altitude_tween_percentage,
-                                calcs.landing_distances.lower_bound.clear_50_ft_obstacle(), 
-                                calcs.landing_distances.upper_bound.clear_50_ft_obstacle(), 
-                                "'")
-                            %}
-                            {{calcs.landing_distances.middle_value.clear_50_ft_obstacle() }}'
-                        </td>
-                        <td>{{calcs.landing_distances.upper_bound.ground_run()}}'</td>
-                        <td>{{calcs.landing_distances.upper_bound.clear_50_ft_obstacle()}}'</td>
-                    </tr>
-                </tbody>
-            </table>
+            {% if cessna.atmosphere_bounds.lower.altitude == cessna.atmosphere_bounds.upper.altitude %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">{{cessna.atmosphere_bounds.lower.altitude}}' at {{cessna.atmosphere_bounds.lower.temperature}}°F</th>
+                        </tr>
+                        <tr>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{calcs.landing_distances.lower_bound.ground_run()}}'</td>
+                            <td>{{calcs.landing_distances.lower_bound.clear_50_ft_obstacle()}}'</td>
+                        </tr>
+                    </tbody>
+                </table>
+            {% else %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th colspan="2">{{cessna.atmosphere_bounds.lower.altitude}}' at {{cessna.atmosphere_bounds.lower.temperature}}°F</th>
+                            <th colspan="2">{{cessna.elevation_ft}}' at {{cessna.standard_temperature_f}}°F</th>
+                            <th colspan="2">{{cessna.atmosphere_bounds.upper.altitude}}' at {{cessna.atmosphere_bounds.upper.temperature}}°F</th>
+                        </tr>
+                        <tr>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>             
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{calcs.landing_distances.lower_bound.ground_run()}}'</td>
+                            <td>{{calcs.landing_distances.lower_bound.clear_50_ft_obstacle()}}'</td>
+                            <td>
+                                {% call percent_of::render(
+                                    cessna.altitude_tween_percentage,
+                                    calcs.landing_distances.lower_bound.ground_run(), 
+                                    calcs.landing_distances.upper_bound.ground_run(), 
+                                    "'")
+                                %}
+                                {{calcs.landing_distances.middle_value.ground_run() }}'
+                            </td>
+                            <td>
+                                {% call percent_of::render(
+                                    cessna.altitude_tween_percentage,
+                                    calcs.landing_distances.lower_bound.clear_50_ft_obstacle(), 
+                                    calcs.landing_distances.upper_bound.clear_50_ft_obstacle(), 
+                                    "'")
+                                %}
+                                {{calcs.landing_distances.middle_value.clear_50_ft_obstacle() }}'
+                            </td>
+                            <td>{{calcs.landing_distances.upper_bound.ground_run()}}'</td>
+                            <td>{{calcs.landing_distances.upper_bound.clear_50_ft_obstacle()}}'</td>
+                        </tr>
+                    </tbody>
+                </table>
+            {% endif %}
         </p>
         <h3>Decrease distances shown by 10% for each 4 knots of headwind.</h3>
         <ul>
