@@ -7,7 +7,7 @@ use crate::{
     math::Velocity
 };
 
-use super::ErrorTemplate;
+use super::{ErrorTemplate, ToPageTemplate};
 
 #[derive(Deserialize)]
 pub struct PerformanceParameters {
@@ -19,7 +19,7 @@ pub struct PerformanceParameters {
 }
 
 #[derive(Template)]
-#[template(path = "aircraft/cessna150j/take-off.html")]
+#[template(path = "partials/aircraft/cessna150j/take-off.html")]
 pub struct TakeOffTemplate {
     is_grass: bool,
     calcs: TakeOff,
@@ -32,46 +32,66 @@ fn get_error_response(parameters: &Query<PerformanceParameters>) -> Response {
     Html(template.render().unwrap()).into_response()
 }
 
-pub async fn template_for_take_off(parameters: Query<PerformanceParameters>) -> Response {
+pub fn get_raw_html_for_take_off(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>) -> String {
+    let headwind = Velocity::Knots(headwind_kts);
+    let cessna = Cessna150J::new(headwind, temperature_f, elevation_ft, standard_temperature_f);
+    let calcs = cessna.calc_take_off();
+
+    let template = TakeOffTemplate {
+        is_grass: match is_grass { Some(value) => value, None => false },
+        calcs,
+        cessna
+    };
+
+    template.render().unwrap()
+}
+
+pub async fn get_for_take_off(parameters: Query<PerformanceParameters>) -> Response {
     if parameters.headwind_kts < 0 {
         get_error_response(&parameters)
     } else {
-        let headwind = Velocity::Knots(parameters.headwind_kts);
-        let cessna = Cessna150J::new(headwind, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f);
-        let calcs = cessna.calc_take_off();
-
-        let template = TakeOffTemplate {
-            is_grass: match parameters.is_grass { Some(value) => value, None => false },
-            calcs,
-            cessna
+        let raw_html = get_raw_html_for_take_off(parameters.headwind_kts, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f, parameters.is_grass);
+        let page = ToPageTemplate {
+            page_title:String::from("Cessna 150 J Take Off Performance"),
+            raw_html
         };
 
-        Html(template.render().unwrap()).into_response()
+        Html(page.render().unwrap()).into_response()
     }
 }
 
 #[derive(Template)]
-#[template(path = "aircraft/cessna150j/landing.html")]
+#[template(path = "partials/aircraft/cessna150j/landing.html")]
 pub struct LandingTemplate {
     is_grass: bool,
     calcs: Landing,
     cessna: Cessna150J
 }
 
-pub async fn template_for_landing(parameters: Query<PerformanceParameters>) -> Response {
+pub fn get_raw_html_for_landing(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>) -> String {
+    let headwind = Velocity::Knots(headwind_kts);
+    let cessna = Cessna150J::new(headwind, temperature_f, elevation_ft, standard_temperature_f);
+    let calcs = cessna.calc_landing();
+
+    let template = LandingTemplate {
+        is_grass: match is_grass { Some(value) => value, None => false },
+        calcs,
+        cessna
+    };
+
+    template.render().unwrap()
+}
+
+pub async fn get_response_for_landing(parameters: Query<PerformanceParameters>) -> Response {
     if parameters.headwind_kts < 0 {
         get_error_response(&parameters)
     } else {
-        let headwind = Velocity::Knots(parameters.headwind_kts);
-        let cessna = Cessna150J::new(headwind, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f);
-        let calcs = cessna.calc_landing();
-
-        let template = LandingTemplate {
-            is_grass: match parameters.is_grass { Some(value) => value, None => false },
-            calcs,
-            cessna
+        let raw_html = get_raw_html_for_landing(parameters.headwind_kts, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f, parameters.is_grass);
+        let page = ToPageTemplate {
+            page_title:String::from("Cessna 150 J Landing Performance"),
+            raw_html
         };
 
-        Html(template.render().unwrap()).into_response()
+        Html(page.render().unwrap()).into_response()
     }
 }

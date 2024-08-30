@@ -31,6 +31,14 @@ impl<T> IntoResponse for HtmlTemplate<T> where T: Template,
         }
     }
 }
+
+#[derive(Template)]
+#[template(path = "to_page.html", escape="none")]
+pub struct ToPageTemplate {
+    page_title: String,
+    raw_html: String
+}
+
 #[derive(Template)]
 #[template(path = "error.html")]
 pub struct ErrorTemplate {

@@ -1,64 +1,84 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ airport.ident }} - {{ airport.name }}</title>
+        <title>{{mode}} Airport: {{ airport.ident }} - {{ airport.name }}</title>
         <link rel="stylesheet" href="/styles.css">
-        <script type="text/javascript" src="/scripts/child-main.js"></script>
         <style>select, #custom-metar { width: 100% }</style>
     </head>
     <body>
-        <h2>{{ airport.ident }} - {{ airport.name }}</h2>
-        <h3>METARs Over Last 24 Hours:</h3>
-
-        {% if metars.len() > 0 %}
-        <select id="actual-metar">
-            <option value="">Choose an Actual METAR...</option>
-            {% for metar in metars %}
-                <option>{{ metar }}</option>
-            {% endfor %}
-        </select>
-        <p>- OR -</p>         
+        <h2>{{mode}} Airport: {{ airport.ident }} - {{ airport.name }}</h2>
+        {% if metar.len() == 0 %}
+            {% if metars.len() > 0 %}
+            <form action="/airport/{{airport.ident}}/{{mode.to_lowercase()}}/{{aircraft_type}}">
+                <h3>METARs Over Last 24 Hours:</h3>
+                <input type="hidden" value="{{airport.ident}}" name="identifier">
+                <select id="actual-metar" name="actual_metar">
+                    <option value="">Choose an Actual METAR...</option>
+                    {% for metar in metars %}
+                        <option>{{ metar }}</option>
+                    {% endfor %}
+                </select>
+                <p>- OR -</p>         
+                {% endif %}
+                <input type="text" id="custom-metar" name="custom_metar" placeholder="Use Custom METAR">
+                <button>Select METAR</button>
+            </form>
+        {% else %}
+            <h3>Selected METAR:</h3>
+            <p> {{ metar }} </p>
+            <h3>Runways</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Select</th>
+                        <th>Runway</th>
+                        <th>Heading</th>
+                        <th>Elevation</th>
+                        <th>Surface</th>
+                        <th>Is Grass</th>
+                        <th>Length</th>
+                        <th>Displaced Threshold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for runway in airport.runways %}
+                    <tr>
+                        <form action="/runway" method="POST">
+                            <td>
+                                <button>Select</button>
+                                <input type="hidden" name="metar" value="{{metar}}">
+                                <input type="hidden" name="is_takeoff" value="{{ is_take_off }}">
+                                <input type="hidden" name="aircraft_type" value="{{ aircraft_type }}">
+                            </td>
+                            <td>{{ runway.le_ident }}</td>
+                            <td><input type="hidden" name="heading" value="{{ runway.le_heading }}">{{ runway.le_heading }}</td>
+                            <td><input type="hidden" name="elevation" value="{{ runway.le_elevation }}">{{ runway.le_elevation }}'</td>
+                            <td>{{ runway.surface }}</td>
+                            <td><input type="hidden" name="is_grass" value="{{ runway.is_grass }}"><input type="checkbox" disabled{% if runway.is_grass %} checked {% endif %}></td>
+                            <td><input type="hidden" name="length" value="{{ runway.length }}">{{ runway.length }}'</td>
+                            <td><input type="hidden" name="displaced_threshold" value="{{ runway.le_displaced_threshold }}">{{ runway.le_displaced_threshold }}'</td>
+                        </form>
+                    </tr>
+                    <tr>
+                        <form action="/runway" method="POST">
+                            <td>
+                                <button>Select</button>
+                                <input type="hidden" name="metar" value="{{metar}}">
+                                <input type="hidden" name="is_takeoff" value="{{ is_take_off }}">
+                                <input type="hidden" name="aircraft_type" value="{{ aircraft_type }}">
+                            </td>
+                            <td>{{ runway.he_ident }}</td>
+                            <td><input type="hidden" name="heading" value="{{ runway.he_heading }}">{{ runway.he_heading }}</td>
+                            <td><input type="hidden" name="elevation" value="{{ runway.he_elevation }}">{{ runway.he_elevation }}'</td>
+                            <td>{{ runway.surface }}</td>
+                            <td><input type="hidden" name="is_grass" value="{{ runway.is_grass }}"><input type="checkbox" disabled{% if runway.is_grass %} checked {% endif %}></td>
+                            <td><input type="hidden" name="length" value="{{ runway.length }}">{{ runway.length }}'</td>
+                            <td><input type="hidden" name="displaced_threshold" value="{{ runway.he_displaced_threshold }}">{{ runway.he_displaced_threshold }}'</td>
+                        </form>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% endif %}
-        <input type="text" id="custom-metar" placeholder="Write Custom METAR">
-        <h3>Runways</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Runway</th>
-                    <th>Heading</th>
-                    <th>Elevation</th>
-                    <th>Surface</th>
-                    <th>Is Grass</th>
-                    <th>Length</th>
-                    <th>Displaced Threshold</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for runway in airport.runways %}
-                <tr>
-                    <td><input type="radio" name="runway" value="{{ runway.le_ident }}"></td>
-                    <td data-ident="{{ runway.le_ident }}">{{ runway.le_ident }}</td>
-                    <td data-heading="{{ runway.le_heading }}">{{ runway.le_heading }}</td>
-                    <td data-elevation="{{ runway.le_elevation }}">{{ runway.le_elevation }}'</td>
-                    <td>{{ runway.surface }}</td>
-                    <td data-is-grass="{{runway.is_grass}}">{{ runway.is_grass }}</td>
-                    <td data-length="{{ runway.length }}">{{ runway.length }}'</td>
-                    <td data-displaced-threshold="{{ runway.le_displaced_threshold }}">{{ runway.le_displaced_threshold }}'</td>
-                </tr>
-                <tr>
-                    <td><input type="radio" name="runway" value="{{ runway.he_ident }}"></td>
-                    <td data-ident="{{ runway.he_ident }}">{{ runway.he_ident }}</td>
-                    <td data-heading="{{ runway.he_heading }}">{{ runway.he_heading }}</td>
-                    <td data-elevation="{{ runway.he_elevation }}">{{ runway.he_elevation }}'</td>
-                    <td>{{ runway.surface }}</td>
-                    <td data-is-grass="{{runway.is_grass}}">{{ runway.is_grass }}</td>
-                    <td data-length="{{ runway.length }}">{{ runway.length }}'</td>
-                    <td data-displaced-threshold="{{ runway.he_displaced_threshold }}">{{ runway.he_displaced_threshold }}'</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <script>collectAirportData();</script>
     </body>
 </html>

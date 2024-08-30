@@ -5,20 +5,22 @@
         <link rel="stylesheet" href="/styles.css">
     </head>
     <body>
-        <h1>Departing From:</h1>
-        <input id="txtDeparture" type="text">
-        <input type="button" value="Get Airport" onclick="loadAirport(document.getElementById('txtDeparture').value, 'departure-airport')">
-        <iframe id="departure-airport" scrolling="no"></iframe>
-        <iframe id="departing-runway" scrolling="no"></iframe>
-        <iframe id="take-off" scrolling="no"></iframe>
-        <div id="arrive" style="display: none;">
-            <h1>Arriving At:</h1>
-            <input id="txtArrive" type="text">
-            <input type="button" value="Get Airport" onclick="loadAirport(document.getElementById('txtArrive').value, 'arrival-airport')">
-            <iframe id="arrival-airport" scrolling="no"></iframe>
-            <iframe id="arrival-runway" scrolling="no"></iframe>
-            <iframe id="landing" scrolling="no"></iframe>
-        </div>
+        <form action="/airport" method="POST">
+            <div>
+                <label for="is_arrival">Is Arrival:</label>
+                <input type="checkbox" id="is_arrival" name="is_arrival" value="true" />
+            </div>
+            <div>
+                <label for="is_arrival">Aircraft Type:</label>
+                <select id="aircraft_type" name="aircraft_type">
+                    <option value="cessna150j">Cessna 150 J</option>
+                </select>
+            </div>
+            <div>
+                <label for="identifier">Airport Identifier:</label>
+                <input type="text" id="identifier" name="identifier"/>
+            </div>
+            <button>Begin</button>
+        </form>
     </body>
-    <script type="text/javascript" src="/scripts/main.js"></script>
 </html>

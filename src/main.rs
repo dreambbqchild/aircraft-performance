@@ -11,10 +11,13 @@ use tower_http::services::ServeDir;
 async fn main() {
     let app = Router::new()
         .nest_service("/", ServeDir::new("static"))
-        .route("/airport/:identifier", axum::routing::get(pages::airport::template))
-        .route("/aircraft/cessna150j/take-off", axum::routing::get(pages::cessna150j::template_for_take_off))
-        .route("/aircraft/cessna150j/landing", axum::routing::get(pages::cessna150j::template_for_landing))
-        .route("/runway", axum::routing::get(pages::runway::template));
+        .route("/airport", axum::routing::post(pages::airport::post))
+        .route("/airport/:identifier/departure/:aircraft_type", axum::routing::get(pages::airport::get_departure))
+        .route("/airport/:identifier/arrival/:aircraft_type", axum::routing::get(pages::airport::get_arrival))
+        .route("/aircraft/cessna150j/take-off", axum::routing::get(pages::cessna150j::get_for_take_off))
+        .route("/aircraft/cessna150j/landing", axum::routing::get(pages::cessna150j::get_response_for_landing))
+        .route("/runway", axum::routing::post(pages::runway::post))
+        .route("/runway", axum::routing::get(pages::runway::get));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3030").await.unwrap();
     axum::serve(listener, app).await.unwrap();

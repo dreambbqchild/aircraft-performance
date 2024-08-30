@@ -1,8 +1,18 @@
 * { box-sizing: border-box; }
 
+html, body {padding:0; margin:0;}
+
 iframe {
     width: 100%;
     border: none;
 }
 table, th, td { border: 1px solid; }
 td {text-align: center;}
+
+input[readonly] {
+    border: none;
+}
+
+input:after {
+    content: attr(value);
+}

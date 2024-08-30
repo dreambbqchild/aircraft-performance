@@ -2,14 +2,6 @@
 {%- import "macros/percent_of.html" as percent_of -%}
 {%- import "macros/cessna150j/temperature_correction.html" as temperature_correction -%}
 {%- import "macros/cessna150j/grass_correction.html" as grass_correction -%}
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Landing</title>
-        <link rel="stylesheet" href="/styles.css">
-        <script type="text/javascript" src="/scripts/child-main.js"></script>
-    </head>
-    <body>
         <h2>Landing</h2>
         <p>
             The airport elevation of {{cessna.elevation_ft}}' is 
@@ -156,5 +148,3 @@
                 calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle())
             %}
         {% endif %}
-    </body>
-</html>
