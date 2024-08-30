@@ -32,18 +32,23 @@ fn get_error_response(parameters: &Query<PerformanceParameters>) -> Response {
     Html(template.render().unwrap()).into_response()
 }
 
-pub fn get_raw_html_for_take_off(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>) -> String {
+pub fn get_raw_html<T>(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, callback: &dyn Fn(Cessna150J) -> T) -> String where T : Template {
     let headwind = Velocity::Knots(headwind_kts);
     let cessna = Cessna150J::new(headwind, temperature_f, elevation_ft, standard_temperature_f);
-    let calcs = cessna.calc_take_off();
 
-    let template = TakeOffTemplate {
-        is_grass: match is_grass { Some(value) => value, None => false },
-        calcs,
-        cessna
-    };
-
+    let template = callback(cessna);
     template.render().unwrap()
+}
+
+pub fn get_raw_html_for_take_off(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>) -> String {
+    get_raw_html(headwind_kts, temperature_f, elevation_ft, standard_temperature_f, &|cessna| {
+        let calcs = cessna.calc_take_off(); 
+        TakeOffTemplate {
+            is_grass: match is_grass { Some(value) => value, None => false },
+            calcs,
+            cessna
+        }
+    })
 }
 
 pub async fn get_for_take_off(parameters: Query<PerformanceParameters>) -> Response {
@@ -69,17 +74,14 @@ pub struct LandingTemplate {
 }
 
 pub fn get_raw_html_for_landing(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>) -> String {
-    let headwind = Velocity::Knots(headwind_kts);
-    let cessna = Cessna150J::new(headwind, temperature_f, elevation_ft, standard_temperature_f);
-    let calcs = cessna.calc_landing();
-
-    let template = LandingTemplate {
-        is_grass: match is_grass { Some(value) => value, None => false },
-        calcs,
-        cessna
-    };
-
-    template.render().unwrap()
+    get_raw_html(headwind_kts, temperature_f, elevation_ft, standard_temperature_f, &|cessna| {
+        let calcs = cessna.calc_landing(); 
+        LandingTemplate {
+            is_grass: match is_grass { Some(value) => value, None => false },
+            calcs,
+            cessna
+        }
+    })
 }
 
 pub async fn get_response_for_landing(parameters: Query<PerformanceParameters>) -> Response {
