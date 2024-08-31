@@ -1,3 +1,5 @@
+use crate::data::performance::distance::Distance;
+
 pub mod wind;
 
 #[derive(Debug, Clone, Copy)]
@@ -66,6 +68,8 @@ pub trait FloatingCalcs {
 
     fn percent_i16(&self, lower_bound: i16, upper_bound: i16) -> f64;
     fn percent_of_i16(&self, lower_bound: i16, upper_bound: i16) -> f64;
+
+    fn percent_of_distance(&self, lower_bound: Distance, upper_bound: Distance) -> Distance;
 }
 
 impl FloatingCalcs for f64 {
@@ -89,5 +93,12 @@ impl FloatingCalcs for f64 {
 
     fn percent_of_i16(&self, lower_bound: i16, upper_bound: i16) -> f64 {
         self.percent_of(lower_bound as f64, upper_bound as f64)
+    }
+
+    fn percent_of_distance(&self, lower_bound: Distance, upper_bound: Distance) -> Distance {
+        Distance::new_from_f64(
+            self.percent_of_i16(lower_bound.ground_run(), upper_bound.ground_run()),
+            self.percent_of_i16(lower_bound.clear_50_ft_obstacle(), upper_bound.clear_50_ft_obstacle())
+        )
     }
 }

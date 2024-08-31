@@ -200,30 +200,11 @@ impl Cessna150J {
         let upper_wind_lower_altitude = get_take_off_distance(&self.headwinds.upper_indexer, &self.atmosphere_bounds.lower.indexer).expect("To get upper_wind_lower_altitude.");
         let upper_wind_upper_altitude = get_take_off_distance(&self.headwinds.upper_indexer, &self.atmosphere_bounds.upper.indexer).expect("To get upper_wind_upper_altitude.");
 
-        let lower_tween = Distance::new_from_f64(
-            self.headwind_tween_percentage.percent_of_i16(lower_wind_lower_altitude.ground_run(), upper_wind_lower_altitude.ground_run()),
-            self.headwind_tween_percentage.percent_of_i16(lower_wind_lower_altitude.clear_50_ft_obstacle(), upper_wind_lower_altitude.clear_50_ft_obstacle())
-        );
-
-        let lower_middle_tween = Distance::new_from_f64(
-            self.altitude_tween_percentage.percent_of_i16(lower_wind_lower_altitude.ground_run(), lower_wind_upper_altitude.ground_run()),
-            self.altitude_tween_percentage.percent_of_i16(lower_wind_lower_altitude.clear_50_ft_obstacle(), lower_wind_upper_altitude.clear_50_ft_obstacle())
-        );
-
-        let upper_tween = Distance::new_from_f64(
-            self.headwind_tween_percentage.percent_of_i16(lower_wind_upper_altitude.ground_run(), upper_wind_upper_altitude.ground_run()),
-            self.headwind_tween_percentage.percent_of_i16(lower_wind_upper_altitude.clear_50_ft_obstacle(), upper_wind_upper_altitude.clear_50_ft_obstacle())
-        );
-
-        let upper_middle_tween = Distance::new_from_f64(
-            self.altitude_tween_percentage.percent_of_i16(upper_wind_lower_altitude.ground_run(), upper_wind_upper_altitude.ground_run()),
-            self.altitude_tween_percentage.percent_of_i16(upper_wind_lower_altitude.clear_50_ft_obstacle(), upper_wind_upper_altitude.clear_50_ft_obstacle())
-        );
-
-        let distance_at_elevation = Distance::new_from_f64(
-            self.altitude_tween_percentage.percent_of_i16(lower_tween.ground_run(), upper_tween.ground_run()), 
-            self.altitude_tween_percentage.percent_of_i16(lower_tween.clear_50_ft_obstacle(), upper_tween.clear_50_ft_obstacle())
-        );
+        let lower_tween = self.headwind_tween_percentage.percent_of_distance(lower_wind_lower_altitude, upper_wind_lower_altitude);
+        let lower_middle_tween = self.altitude_tween_percentage.percent_of_distance(lower_wind_lower_altitude, lower_wind_upper_altitude);
+        let upper_tween = self.headwind_tween_percentage.percent_of_distance(lower_wind_upper_altitude, upper_wind_upper_altitude);
+        let upper_middle_tween = self.altitude_tween_percentage.percent_of_distance(upper_wind_lower_altitude, upper_wind_upper_altitude);
+        let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(lower_tween, upper_tween);
 
         let takeoff_distances = [
             PerformanceRow::new_labeled(self.headwinds.lower_value, lower_wind_lower_altitude, lower_middle_tween, lower_wind_upper_altitude),
@@ -254,10 +235,7 @@ impl Cessna150J {
         let lower_altitude = get_landing_distance(&self.atmosphere_bounds.lower.indexer).expect("To get lower_altitude.");
         let upper_altitude = get_landing_distance(&self.atmosphere_bounds.upper.indexer).expect("To get upper_altitude.");
         
-        let distance_at_elevation = Distance::new_from_f64(
-            self.altitude_tween_percentage.percent_of_i16(lower_altitude.ground_run(), upper_altitude.ground_run()),
-            self.altitude_tween_percentage.percent_of_i16(lower_altitude.clear_50_ft_obstacle(), upper_altitude.clear_50_ft_obstacle())
-        );
+        let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(lower_altitude, upper_altitude);
 
         let landing_distances = PerformanceRow::new_unlabeled(lower_altitude, distance_at_elevation, upper_altitude);
 
