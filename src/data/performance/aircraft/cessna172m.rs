@@ -6,48 +6,128 @@ NOTES:
 for each 2 knots.
 4. Where distance value has been deleted, climb performance after lift-off is less than 150 pm at takeoff speed.
 For operation on a dry, grass runway, increase distances by 15% of the "ground roll" figure.
-
-
-		TAKEOFF SPEED	PRESS		0°C		10°C		20°C		30°C		40°C
-WEIGHT LBS		KIAS	ALT		TOTAL		TOTAL		TOTAL		TOTAL		TOTAL
-	LIFT OFF	AT 50 FT	FT	GRND ROLL	TO CLEAR 50 FT OBS	GRND ROLL	TO CLEAR 50 FT OBS	GRND ROLL	TO CLEAR 50 FT OBS	GRND ROLL	TO CLEAR 50 FT OBS	GRND ROLL	TO CLEAR 50 FT OBS
-2300	52	59	S.L.	775	1380	835	1475	895	1575	960	1685	1030	1795
-			1000	850	1510	915	1615	980	1725	1050	1845	1125	1970
-			2000	930	1650	1000	1770	1075	1895	1155	2030	1235	2170
-			3000	1020	1815	1100	1945	1180	2085	1270	2235	1360	2395
-			4000	1125	2000	1210	2145	1300	2305	1395	2475	1495	2655
-			5000	1235	2210	1330	2375	1430	2555	1540	2750	1650	2960
-			6000	1365	2450	1470	2640	1580	2850	1700	3070		
-			7000	1505	2730	1625	2955	1750	3190				
-			8000	1665	3065	1800	3320						
-
-
-	SPEED	TAKEOFF	PRESS		0°C		10°C		20°C		30°C		40°C
-WEIGHT LBS		KIAS	ALT		TOTAL		TOTAL		TOTAL		TOTAL		TOTAL
-	LIFT OFF	AT 50 FT	FT	GRND ROLL	TO CLEAR 50 FT OBS	GRND ROLL	TO CLEAR 50 FT OBS	GRND ROLL	TO CLEAR 50 FT 08S	GRND ROLL	TO CLEAR 50 FT O8S	GRND ROLL	TO CLEAR 50 FT OBS
-2100	50	56	S.L.	630	1130	680	1210	725	1290	780	1375	835	1465
-			1000	690	1235	740	1320	795	1405	855	1500	915	1600
-			2000	755	1350	810	1440	870	1540	935	1645	1000	1755
-			3000	830	1475	890	1580	955	1690	1025	1805	1100	1930
-			4000	910	1620	980	1735	1050	1860	1125	1990	1210	2130
-			5000	1000	1780	1075	1910	1155	2050	1240	2195	1330	2355
-			6000	1100	1965	1185	2115	1275	2270	1370	2435	1465	2615
-			7000	1215	2180	1305	2345	1405	2520	1510	2715	1620	2920
-			8000	1340	2425	1445	2615	1555	2815	1675	3040	1795	3280
-1900	47	54	S.L.	505	915	540	975	580	1035	620	1105	665	1175
-			1000	550	995	590	1060	635	1130	680	1205	725	1280
-			2000	600	1085	645	1155	695	1230	745	1315	795	1400
-			3000	660	1180	710	1260	760	1345	815	1435	870	1530
-			4000	725	1290	775	1380	835	1475	895	1575	955	1680
-			5000	795	1415	855	1515	915	1620	985	1735	1055	1850
-			6000	870	1555	940	1670	1010	1785	1080	1910	1160	2045
-			7000	960	1715	1035	1840	1110	1975	1195	2115	1280	2265
-			8000	1060	1900	1140	2040	1225	2190	1320	2350	1415	2520
-
-
-
-
-WEIGHT,SPEED AT,PRESS,,0°C,,10°C,,20°C,,30°C,,40°C
-LBS,50 FT KIAS,ALT FT,GRND ROLL,TOTAL TO CLEAR 50 FT OBS,GRND ROLL,TOTAL TO CLEAR 50 FT OBS,GRND ROLL,TOTAL TO CLEAR 50 FT OBS,GRND ROLL,TOTAL TO CLEAR 50 FT OBS,GRND ROLL,TOTAL TO CLEAR 50 FT OBS
-2300,60,S.L. 1000 2000 3000 4000 5000 6000 7000 8000,495 510 530 550 570 590 615 640 665,1205 1235 1265 1300 1335 1370 1415 1455 1500,510 530 550 570 590 615 640 660 690,1235 1265 1300 1335 1370 1415 1455 1495 1540,530 550 570 590 615 635 660 685 710,1265 1300 1335 1370 1410 1450 1490 1535 1580,545 565 590 610 635 655 685 710 735,1295 1330 1370 1405 1445 1485 1535 1575 1620,565 585 610 630 655 680 705 730 760,1330 1365 1405 1440 1480 1525 1570 1615 1665
 */
+
+use std::cmp::max;
+
+use crate::data::performance::distance::Distance;
+
+const TAKE_OFF_AT_2300_LBS: [[Option<Distance>; 5]; 9] = [
+	[Some(Distance(775, 1380)),  Some(Distance(835, 1475)),  Some(Distance(895, 1575)),  Some(Distance(960, 1685)),  Some(Distance(1030, 1795))],
+	[Some(Distance(850, 1510)),  Some(Distance(915, 1615)),  Some(Distance(980, 1725)),  Some(Distance(1050, 1845)), Some(Distance(1125, 1970))],
+	[Some(Distance(930, 1650)),  Some(Distance(1000, 1770)), Some(Distance(1075, 1895)), Some(Distance(1155, 2030)), Some(Distance(1235, 2170))],
+	[Some(Distance(1020, 1815)), Some(Distance(1100, 1945)), Some(Distance(1180, 2085)), Some(Distance(1270, 2235)), Some(Distance(1360, 2395))],
+	[Some(Distance(1125, 2000)), Some(Distance(1210, 2145)), Some(Distance(1300, 2305)), Some(Distance(1395, 2475)), Some(Distance(1495, 2655))],
+	[Some(Distance(1235, 2210)), Some(Distance(1330, 2375)), Some(Distance(1430, 2555)), Some(Distance(1540, 2750)), Some(Distance(1650, 2960))],
+	[Some(Distance(1365, 2450)), Some(Distance(1470, 2640)), Some(Distance(1580, 2850)), Some(Distance(1700, 3070)), None],
+	[Some(Distance(1505, 2730)), Some(Distance(1625, 2955)), Some(Distance(1750, 3190)), None,                       None],
+	[Some(Distance(1505, 2730)), Some(Distance(1625, 2955)), Some(Distance(1750, 3190)), None,                       None]
+];
+
+const TAKE_OFF_AT_2100_LBS: [[Option<Distance>; 5]; 9] = [
+	[Some(Distance(630, 1130)),  Some(Distance(680, 1210)),  Some(Distance(725, 1290)),  Some(Distance(780, 1375)),  Some(Distance(835, 1465))],
+	[Some(Distance(690, 1235)),  Some(Distance(740, 1320)),  Some(Distance(795, 1405)),  Some(Distance(855, 1500)),  Some(Distance(915, 1600))],
+	[Some(Distance(755, 1350)),  Some(Distance(810, 1440)),  Some(Distance(870, 1540)),  Some(Distance(935, 1645)),  Some(Distance(1000, 1755))],
+	[Some(Distance(830, 1475)),  Some(Distance(890, 1580)),  Some(Distance(955, 1690)),  Some(Distance(1025, 1805)), Some(Distance(1100, 1930))],
+	[Some(Distance(910, 1620)),  Some(Distance(980, 1735)),  Some(Distance(1050, 1860)), Some(Distance(1125, 1990)), Some(Distance(1210, 2130))],
+	[Some(Distance(1000, 1780)), Some(Distance(1075, 1910)), Some(Distance(1155, 2050)), Some(Distance(1240, 2195)), Some(Distance(1330, 2355))],
+	[Some(Distance(1100, 1965)), Some(Distance(1185, 2115)), Some(Distance(1275, 2270)), Some(Distance(1370, 2435)), Some(Distance(1465, 2615))],
+	[Some(Distance(1215, 2180)), Some(Distance(1305, 2345)), Some(Distance(1405, 2520)), Some(Distance(1510, 2715)), Some(Distance(1620, 2920))],
+	[Some(Distance(1340, 2425)), Some(Distance(1445, 2615)), Some(Distance(1555, 2815)), Some(Distance(1675, 3040)), Some(Distance(1795, 3280))]
+];
+
+const TAKE_OFF_AT_1900_LBS: [[Option<Distance>; 5]; 9] = [
+	[Some(Distance(505, 915)),   Some(Distance(540, 975)),   Some(Distance(580, 1035)),  Some(Distance(620, 1105)),  Some(Distance(665, 1175))],
+	[Some(Distance(550, 995)),   Some(Distance(590, 1060)),  Some(Distance(635, 1130)),  Some(Distance(680, 1205)),  Some(Distance(725, 1280))],
+	[Some(Distance(600, 1085)),  Some(Distance(645, 1155)),  Some(Distance(695, 1230)),  Some(Distance(745, 1315)),  Some(Distance(795, 1400))],
+	[Some(Distance(660, 1180)),  Some(Distance(710, 1260)),  Some(Distance(760, 1345)),  Some(Distance(815, 1435)),  Some(Distance(870, 1530))],
+	[Some(Distance(725, 1290)),  Some(Distance(775, 1380)),  Some(Distance(835, 1475)),  Some(Distance(895, 1575)),  Some(Distance(955, 1680))],
+	[Some(Distance(795, 1415)),  Some(Distance(855, 1515)),  Some(Distance(915, 1620)),  Some(Distance(985, 1735)),  Some(Distance(1055, 1850))],
+	[Some(Distance(870, 1555)),  Some(Distance(940, 1670)),  Some(Distance(1010, 1785)), Some(Distance(1080, 1910)), Some(Distance(1160, 2045))],
+	[Some(Distance(960, 1715)),  Some(Distance(1035, 1840)), Some(Distance(1110, 1975)), Some(Distance(1195, 2115)), Some(Distance(1280, 2265))],
+	[Some(Distance(1060, 1900)), Some(Distance(1140, 2040)), Some(Distance(1225, 2190)), Some(Distance(1320, 2350)), Some(Distance(1415, 2520))]
+];
+
+const LANDING_AT_2300_LBS: [[Distance; 5]; 9] = [
+	[ Distance(495, 1205), Distance(510, 1235), Distance(530, 1265), Distance(545, 1295), Distance(565, 1330)],
+	[ Distance(510, 1235), Distance(530, 1265), Distance(550, 1300), Distance(565, 1330), Distance(585, 1365)],
+	[ Distance(530, 1265), Distance(550, 1300), Distance(570, 1335), Distance(590, 1370), Distance(610, 1405)],
+	[ Distance(550, 1300), Distance(570, 1335), Distance(590, 1370), Distance(610, 1405), Distance(630, 1440)],
+	[ Distance(570, 1335), Distance(590, 1370), Distance(615, 1410), Distance(635, 1445), Distance(655, 1480)],
+	[ Distance(590, 1370), Distance(615, 1415), Distance(635, 1450), Distance(655, 1485), Distance(680, 1525)],
+	[ Distance(615, 1415), Distance(640, 1455), Distance(660, 1490), Distance(685, 1535), Distance(705, 1570)],
+	[ Distance(640, 1455), Distance(660, 1495), Distance(685, 1535), Distance(710, 1575), Distance(730, 1615)],
+	[ Distance(665, 1500), Distance(690, 1540), Distance(710, 1580), Distance(735, 1620), Distance(760, 1665)]
+];
+
+#[derive(Clone, Copy)]
+pub enum AircraftWeight {
+	At2300Lbs = 2300,
+	At2100Lbs = 2100,
+	At1900Lbs = 1900
+}
+
+fn calc_row_column(pressure_altitude: i16, temperature_c: i16) -> Result<(usize, usize), &'static str>{
+	let row = max(0, pressure_altitude / 1000) as usize;
+	if row > 8  {
+		return Err("Altitude out of bounds");
+	}
+
+	let col = max(0, temperature_c / 10) as usize;
+	if col > 5  {
+		return Err("Temperature out of bounds");
+	}
+
+	Ok((row, col))
+}
+
+impl AircraftWeight {
+	fn find_take_off_distance(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Option<Distance>, &'static str> {
+		let result = calc_row_column(pressure_altitude, temperature_c);
+		if result.is_err() {
+			return Err(result.err().unwrap());
+		}
+
+		let (row, column) = result.ok().unwrap();
+
+		let table = match self {
+			AircraftWeight::At2300Lbs => &TAKE_OFF_AT_2300_LBS,
+			AircraftWeight::At2100Lbs => &TAKE_OFF_AT_2100_LBS,
+			AircraftWeight::At1900Lbs => &TAKE_OFF_AT_1900_LBS
+		};
+	
+		return Ok(table[row][column]);
+	}
+	
+	pub fn take_off_distance_upper_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Option<Distance>, &'static str> {
+		self.find_take_off_distance(pressure_altitude + 1000, temperature_c)
+	}
+	
+	pub fn take_off_distance_lower_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Option<Distance>, &'static str> {
+		self.find_take_off_distance(pressure_altitude, temperature_c)
+	}
+
+	fn find_landing_distance(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Distance, &'static str> {
+		match self {
+			AircraftWeight::At2300Lbs => {
+				let result = calc_row_column(pressure_altitude, temperature_c);
+				if result.is_err() {
+					return Err(result.err().unwrap());
+				}
+
+				let (row, column) = result.ok().unwrap();
+			
+				return Ok(LANDING_AT_2300_LBS[row][column]);
+			},
+			_=> Err("Performance not defined")
+		}
+	}
+
+	pub fn landing_distance_upper_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Distance, &'static str> {
+		self.find_landing_distance(pressure_altitude + 1000, temperature_c)
+	}
+	
+	pub fn landing_distance_lower_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Distance, &'static str> {
+		self.find_landing_distance(pressure_altitude, temperature_c)
+	}
+}

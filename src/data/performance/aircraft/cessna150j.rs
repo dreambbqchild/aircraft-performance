@@ -92,32 +92,32 @@ fn find_atmosphere(altitude_ft: i16) -> Result<AtmosphereBounds<Atmosphere>, &'s
 fn get_take_off_distance(headwind: &Headwind, atmosphere: &Atmosphere) -> Result<Distance, &'static str> {
     match headwind{
         Headwind::WindCalm => match atmosphere {
-            Atmosphere::Alt0_59F => Ok(Distance::new(735, 1385)),
-            Atmosphere::Alt2500_50F => Ok(Distance::new(910, 1660)),
-            Atmosphere::Alt5000_41F => Ok(Distance::new(1115, 1985)),
-            Atmosphere::Alt7500_32F => Ok(Distance::new(1360, 2440))
+            Atmosphere::Alt0_59F => Ok(Distance(735, 1385)),
+            Atmosphere::Alt2500_50F => Ok(Distance(910, 1660)),
+            Atmosphere::Alt5000_41F => Ok(Distance(1115, 1985)),
+            Atmosphere::Alt7500_32F => Ok(Distance(1360, 2440))
         },
         Headwind::Wind10 => match atmosphere {
-            Atmosphere::Alt0_59F => Ok(Distance::new(500, 1035)),
-            Atmosphere::Alt2500_50F => Ok(Distance::new(630, 1250)),
-            Atmosphere::Alt5000_41F => Ok(Distance::new(780, 1510)),
-            Atmosphere::Alt7500_32F => Ok(Distance::new(970, 1875))
+            Atmosphere::Alt0_59F => Ok(Distance(500, 1035)),
+            Atmosphere::Alt2500_50F => Ok(Distance(630, 1250)),
+            Atmosphere::Alt5000_41F => Ok(Distance(780, 1510)),
+            Atmosphere::Alt7500_32F => Ok(Distance(970, 1875))
         },
         Headwind::Wind20 => match atmosphere {
-            Atmosphere::Alt0_59F => Ok(Distance::new(305, 730)),
-            Atmosphere::Alt2500_50F => Ok(Distance::new(395, 890)),
-            Atmosphere::Alt5000_41F => Ok(Distance::new(505, 1090)),
-            Atmosphere::Alt7500_32F => Ok(Distance::new(640, 1375))
+            Atmosphere::Alt0_59F => Ok(Distance(305, 730)),
+            Atmosphere::Alt2500_50F => Ok(Distance(395, 890)),
+            Atmosphere::Alt5000_41F => Ok(Distance(505, 1090)),
+            Atmosphere::Alt7500_32F => Ok(Distance(640, 1375))
         }
     }
 }
 
 fn get_landing_distance(atmosphere: &Atmosphere) -> Result<Distance, &'static str> {
     match atmosphere {
-        Atmosphere::Alt0_59F => Ok(Distance::new(445, 1075)),
-        Atmosphere::Alt2500_50F => Ok(Distance::new(470, 1135)),
-        Atmosphere::Alt5000_41F => Ok(Distance::new(495, 1195)),
-        Atmosphere::Alt7500_32F => Ok(Distance::new(520, 1255))
+        Atmosphere::Alt0_59F => Ok(Distance(445, 1075)),
+        Atmosphere::Alt2500_50F => Ok(Distance(470, 1135)),
+        Atmosphere::Alt5000_41F => Ok(Distance(495, 1195)),
+        Atmosphere::Alt7500_32F => Ok(Distance(520, 1255))
     }
 }
 
@@ -188,7 +188,7 @@ impl Cessna150J {
 
     fn calc_distance_corrected_for_grass(&self, distance: Distance, scale_factor: f64) -> (i16, Distance) {
         let grass_offset = (distance.clear_50_ft_obstacle() as f64 * scale_factor).round() as i16;
-        (grass_offset, Distance::new(
+        (grass_offset, Distance(
             distance.ground_run() + grass_offset,
             distance.clear_50_ft_obstacle() + grass_offset,
         ))
