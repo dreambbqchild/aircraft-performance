@@ -62,6 +62,36 @@ impl Temperature {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum Pressure {
+    Altimeter(f64),
+    Altitude(f64)
+}
+
+impl Pressure {
+    pub fn altimeter(self, elevation_ft: i16) -> Result<f64, &'static str> {
+        if let Pressure::Altimeter(p) = self {
+            Ok(p)
+        } else if let Pressure::Altitude(p) = self {
+            Ok((29.92 - p) * 1000.0 + elevation_ft as f64)
+        }
+        else {
+            Err("Can't convert")
+        }   
+    }
+
+    pub fn altitude(self, elevation_ft: i16) -> Result<f64, &'static str> {
+        if let Pressure::Altimeter(p) = self {
+            Ok((p + elevation_ft as f64 + 29920.0) / 1000.0)
+        } else if let Pressure::Altitude(p) = self {
+            Ok(p)
+        }
+        else {
+            Err("Can't convert")
+        }   
+    }
+}
+
 pub trait FloatingCalcs {
     fn percent(&self, lower_bound: f64, upper_bound: f64) -> f64;
     fn percent_of(&self, lower_bound: f64, upper_bound: f64) -> f64;
