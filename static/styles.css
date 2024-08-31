@@ -6,8 +6,21 @@ iframe {
     width: 100%;
     border: none;
 }
+
 table, th, td { border: 1px solid; }
-td {text-align: center;}
+
+.text-center {text-align: center;}
+
+.form-fields td:first-child {
+    text-align: right;
+}
+
+.form-fields {
+    button, select {width: 100%}
+    td:last-child {
+        text-align: left;
+    }
+}
 
 input[readonly] {
     border: none;

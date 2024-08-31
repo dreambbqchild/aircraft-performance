@@ -34,7 +34,7 @@
                         <th>Total to Clear 50' Obs</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="text-center">
                     <tr>
                         <td>{{calcs.takeoff_distances[0].wind_speed.unwrap()}} kts</td>
                         <td>{{calcs.takeoff_distances[0].lower_bound.ground_run()}}'</td>
@@ -62,7 +62,7 @@
                             <th>Total to Clear 50' Obs</th>             
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="text-center">
                         {%for (i, row) in calcs.takeoff_distances.iter().enumerate() %}
                             <tr{% if cessna.headwind_kts % 10 == 0 && i != 0 %} style="display: none" {% endif %}>
                                 <td>{{row.wind_speed.expect("wind_speed to be set")}} kts</td>
