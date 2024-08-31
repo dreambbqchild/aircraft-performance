@@ -11,12 +11,12 @@
         <p>
             The headwind of {{cessna.headwind_kts}} kts is
             {% call percent_between::render(cessna.headwind_kts, 
-                cessna.headwinds.lower_value, 
-                cessna.headwinds.upper_value, 
+                cessna.headwinds.lower_value.knots(), 
+                cessna.headwinds.upper_value.knots(),
                 cessna.headwind_tween_percentage, 
                 " kts") 
             %}
-            between the lower bound of {{cessna.headwinds.lower_value}} kts and the upper bound of {{cessna.headwinds.upper_value}}kts.
+            between the lower bound of {{cessna.headwinds.lower_value.knots()}} kts and the upper bound of {{cessna.headwinds.upper_value.knots()}}kts.
         </p>
         <p>
             The relevant distances are then:

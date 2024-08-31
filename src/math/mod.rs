@@ -9,25 +9,17 @@ pub enum Velocity {
 }
 
 impl Velocity {
-    pub fn knots(self) -> Result<i16, &'static str> {
-        if let Velocity::Knots(k) = self {
-            Ok(k)
-        } else if let Velocity::MilesPerHour(mph) = self {
-            Ok((mph as f64 / 1.151).round() as i16)
-        }
-        else {
-            Err("Can't convert")
+    pub fn knots(self) -> i16 {
+        match self {
+            Velocity::Knots(k) => k,
+            Velocity::MilesPerHour(mph) => (mph as f64 / 1.151).round() as i16,
         }
     }
 
-    pub fn miles_per_hour(self) -> Result<i16, &'static str> {
-        if let Velocity::Knots(k) = self {
-            Ok((k as f64 * 1.151).round() as i16)
-        } else if let Velocity::MilesPerHour(mph) = self {
-            Ok(mph)
-        }
-        else {
-            Err("Can't convert")
+    pub fn miles_per_hour(self) -> i16 {
+        match self {
+            Velocity::Knots(k) => (k as f64 * 1.151).round() as i16,
+            Velocity::MilesPerHour(mph) => mph
         }
     }
 }
@@ -39,25 +31,17 @@ pub enum Temperature {
 }
 
 impl Temperature {
-    pub fn celsius(self) -> Result<i16, &'static str> {
-        if let Temperature::Celsius(c) = self {
-            Ok(c)
-        } else if let Temperature::Fahrenheit(f) = self {
-            Ok(((f as f64 - 32.0) * 5.0 / 9.0).round() as i16)
-        }
-        else {
-            Err("Can't convert")
+    pub fn celsius(self) -> i16 {
+        match self {
+            Temperature::Celsius(c) => c,
+            Temperature::Fahrenheit(f) => ((f as f64 - 32.0) * 5.0 / 9.0).round() as i16
         }
     }
 
-    pub fn fahrenheit(self) -> Result<i16, &'static str> {
-        if let Temperature::Celsius(c) = self {
-            Ok(((c as f64 * 9.0 / 5.0) + 32.0).round() as i16)
-        } else if let Temperature::Fahrenheit(f) = self {
-            Ok(f)
-        }
-        else {
-            Err("Can't convert")
+    pub fn fahrenheit(self) -> i16 {
+        match self {
+            Temperature::Celsius(c) => ((c as f64 * 9.0 / 5.0) + 32.0).round() as i16,
+            Temperature::Fahrenheit(f) => f
         }
     }
 }
@@ -69,26 +53,18 @@ pub enum Pressure {
 }
 
 impl Pressure {
-    pub fn altimeter(self, elevation_ft: i16) -> Result<f64, &'static str> {
-        if let Pressure::Altimeter(p) = self {
-            Ok(p)
-        } else if let Pressure::Altitude(p) = self {
-            Ok((29.92 - p) * 1000.0 + elevation_ft as f64)
-        }
-        else {
-            Err("Can't convert")
+    pub fn altimeter(self, elevation_ft: i16) -> f64 {
+        match self {
+            Pressure::Altimeter(p) => p,
+            Pressure::Altitude(p) => (29.92 - p) * 1000.0 + elevation_ft as f64
         }   
     }
 
-    pub fn altitude(self, elevation_ft: i16) -> Result<f64, &'static str> {
-        if let Pressure::Altimeter(p) = self {
-            Ok((p + elevation_ft as f64 + 29920.0) / 1000.0)
-        } else if let Pressure::Altitude(p) = self {
-            Ok(p)
-        }
-        else {
-            Err("Can't convert")
-        }   
+    pub fn altitude(self, elevation_ft: i16) -> f64 {
+        match self {
+            Pressure::Altimeter(p) => (p + elevation_ft as f64 + 29920.0) / 1000.0,
+            Pressure::Altitude(p) => p
+        }      
     }
 }
 
@@ -98,6 +74,8 @@ pub trait FloatingCalcs {
 
     fn percent_i16(&self, lower_bound: i16, upper_bound: i16) -> f64;
     fn percent_of_i16(&self, lower_bound: i16, upper_bound: i16) -> f64;
+
+    fn percent_velocity(&self, lower_bound: Velocity, upper_bound: Velocity) -> f64;
 
     fn percent_of_distance(&self, lower_bound: Distance, upper_bound: Distance) -> Distance;
 }
@@ -123,6 +101,10 @@ impl FloatingCalcs for f64 {
 
     fn percent_of_i16(&self, lower_bound: i16, upper_bound: i16) -> f64 {
         self.percent_of(lower_bound as f64, upper_bound as f64)
+    }
+
+    fn percent_velocity(&self, lower_bound: Velocity, upper_bound: Velocity) -> f64 {
+        self.percent_of(lower_bound.knots() as f64, upper_bound.knots() as f64)
     }
 
     fn percent_of_distance(&self, lower_bound: Distance, upper_bound: Distance) -> Distance {

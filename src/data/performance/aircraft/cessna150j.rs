@@ -4,55 +4,18 @@ use crate::{
     math::{FloatingCalcs, Velocity}
 };
 
-pub enum Headwind {
-    WindCalm = 0,
-    Wind10 = 1,
-    Wind20 = 2
-}
+fn find_headwind_performance_keys(headwind_kts: i16) -> Result<Headwinds, &'static str> {
+    let lower_value = (headwind_kts / 10) * 10;
+    let upper_value = lower_value + 10;    
 
-fn find_headwinds(headwind_kts: i16) -> Result<Headwinds<Headwind>, &'static str> {
-    if headwind_kts == 20 {
-        Ok(Headwinds {
-             lower_indexer: Headwind::Wind20,  
-             lower_value: 20,
-             upper_indexer: Headwind::Wind20, 
-             upper_value: 20
-        })
-    }
-    else if headwind_kts > 10 {
-        Ok(Headwinds {
-            lower_indexer: Headwind::Wind10,
-            lower_value: 10,
-            upper_indexer: Headwind::Wind20,
-            upper_value: 20
-       })
-    }
-    else if headwind_kts == 10 {
-        Ok(Headwinds {
-            lower_indexer: Headwind::Wind10,
-            lower_value: 10,
-            upper_indexer: Headwind::Wind10,
-            upper_value: 10
-       })
-    }
-    else if headwind_kts > 0 {
-        Ok(Headwinds {
-            lower_indexer: Headwind::WindCalm,
-            lower_value: 0,
-            upper_indexer: Headwind::Wind10,
-            upper_value: 10
-       })
-    }
-    else if headwind_kts == 0 {
-        Ok(Headwinds {
-            lower_indexer: Headwind::WindCalm,
-            lower_value: 0,
-            upper_indexer: Headwind::WindCalm,
-            upper_value: 0
-       })
-    }
-    else {
+    if lower_value < 0 || upper_value > 20  {
         Err("Unable to calculate, performance not defined")
+    } else {
+
+        Ok(Headwinds {
+            lower_value: Velocity::Knots(lower_value),
+            upper_value: Velocity::Knots(upper_value)
+        }) 
     }
 }
 
@@ -89,26 +52,27 @@ fn find_atmosphere(altitude_ft: i16) -> Result<AtmosphereBounds<Atmosphere>, &'s
     }
 }
 
-fn get_take_off_distance(headwind: &Headwind, atmosphere: &Atmosphere) -> Result<Distance, &'static str> {
-    match headwind{
-        Headwind::WindCalm => match atmosphere {
+fn get_take_off_distance(velocity: &Velocity, atmosphere: &Atmosphere) -> Result<Distance, &'static str> {
+    match velocity {
+        Velocity::Knots(0) => match atmosphere {
             Atmosphere::Alt0_59F => Ok(Distance(735, 1385)),
             Atmosphere::Alt2500_50F => Ok(Distance(910, 1660)),
             Atmosphere::Alt5000_41F => Ok(Distance(1115, 1985)),
             Atmosphere::Alt7500_32F => Ok(Distance(1360, 2440))
         },
-        Headwind::Wind10 => match atmosphere {
+        Velocity::Knots(10) => match atmosphere {
             Atmosphere::Alt0_59F => Ok(Distance(500, 1035)),
             Atmosphere::Alt2500_50F => Ok(Distance(630, 1250)),
             Atmosphere::Alt5000_41F => Ok(Distance(780, 1510)),
             Atmosphere::Alt7500_32F => Ok(Distance(970, 1875))
         },
-        Headwind::Wind20 => match atmosphere {
+        Velocity::Knots(20) => match atmosphere {
             Atmosphere::Alt0_59F => Ok(Distance(305, 730)),
             Atmosphere::Alt2500_50F => Ok(Distance(395, 890)),
             Atmosphere::Alt5000_41F => Ok(Distance(505, 1090)),
             Atmosphere::Alt7500_32F => Ok(Distance(640, 1375))
-        }
+        },
+        _ => Err("Undefined performance")
     }
 }
 
@@ -119,18 +83,6 @@ fn get_landing_distance(atmosphere: &Atmosphere) -> Result<Distance, &'static st
         Atmosphere::Alt5000_41F => Ok(Distance(495, 1195)),
         Atmosphere::Alt7500_32F => Ok(Distance(520, 1255))
     }
-}
-
-pub struct Cessna150J {
-    pub headwind_kts: i16,
-    pub headwinds: Headwinds<Headwind>,
-    pub headwind_tween_percentage: f64,
-    pub elevation_ft: i16,
-    pub atmosphere_bounds: AtmosphereBounds<Atmosphere>,
-    pub altitude_tween_percentage: f64,
-    pub temperature_f: i16,
-    pub standard_temperature_f: i16,
-    pub temperature_f_diff_from_standard: i16
 }
 
 pub struct Corrections {
@@ -154,11 +106,23 @@ pub struct Landing {
     pub correction: Corrections
 }
 
+pub struct Cessna150J {
+    pub headwind_kts: i16,
+    pub headwinds: Headwinds,
+    pub headwind_tween_percentage: f64,
+    pub elevation_ft: i16,
+    pub atmosphere_bounds: AtmosphereBounds<Atmosphere>,
+    pub altitude_tween_percentage: f64,
+    pub temperature_f: i16,
+    pub standard_temperature_f: i16,
+    pub temperature_f_diff_from_standard: i16
+}
+
 impl Cessna150J {
     pub fn new(headwind: Velocity, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16) -> Cessna150J {
-        let headwind_kts = headwind.knots().expect("To convert to knots"); 
-        let headwinds = find_headwinds(headwind_kts).expect("To get the headwind bounds.");
-        let wind_percentage = (headwind_kts as f64).percent_i16(headwinds.lower_value, headwinds.upper_value);
+        let headwind_kts = headwind.knots();
+        let headwinds = find_headwind_performance_keys(headwind_kts).expect("To get the headwind bounds.");
+        let wind_percentage = (headwind_kts as f64).percent_velocity(headwinds.lower_value, headwinds.upper_value);
         
         let atmosphere_bounds = find_atmosphere(elevation_ft).expect("To get the atmospheric bounds.");
         let altitude_tween_percentage = (elevation_ft as f64).percent_i16(atmosphere_bounds.lower.altitude, atmosphere_bounds.upper.altitude);
@@ -195,10 +159,10 @@ impl Cessna150J {
     }
 
     pub fn calc_take_off(&self) -> TakeOff {
-        let lower_wind_lower_altitude = get_take_off_distance(&self.headwinds.lower_indexer, &self.atmosphere_bounds.lower.indexer).expect("To get lower_wind_lower_altitude.");
-        let lower_wind_upper_altitude = get_take_off_distance(&self.headwinds.lower_indexer, &self.atmosphere_bounds.upper.indexer).expect("To get lower_wind_upper_altitude.");
-        let upper_wind_lower_altitude = get_take_off_distance(&self.headwinds.upper_indexer, &self.atmosphere_bounds.lower.indexer).expect("To get upper_wind_lower_altitude.");
-        let upper_wind_upper_altitude = get_take_off_distance(&self.headwinds.upper_indexer, &self.atmosphere_bounds.upper.indexer).expect("To get upper_wind_upper_altitude.");
+        let lower_wind_lower_altitude = get_take_off_distance(&self.headwinds.lower_value, &self.atmosphere_bounds.lower.indexer).expect("To get lower_wind_lower_altitude.");
+        let lower_wind_upper_altitude = get_take_off_distance(&self.headwinds.lower_value, &self.atmosphere_bounds.upper.indexer).expect("To get lower_wind_upper_altitude.");
+        let upper_wind_lower_altitude = get_take_off_distance(&self.headwinds.upper_value, &self.atmosphere_bounds.lower.indexer).expect("To get upper_wind_lower_altitude.");
+        let upper_wind_upper_altitude = get_take_off_distance(&self.headwinds.upper_value, &self.atmosphere_bounds.upper.indexer).expect("To get upper_wind_upper_altitude.");
 
         let lower_tween = self.headwind_tween_percentage.percent_of_distance(lower_wind_lower_altitude, upper_wind_lower_altitude);
         let lower_middle_tween = self.altitude_tween_percentage.percent_of_distance(lower_wind_lower_altitude, lower_wind_upper_altitude);
@@ -207,9 +171,9 @@ impl Cessna150J {
         let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(lower_tween, upper_tween);
 
         let takeoff_distances = [
-            PerformanceRow::new_labeled(self.headwinds.lower_value, lower_wind_lower_altitude, lower_middle_tween, lower_wind_upper_altitude),
+            PerformanceRow::new_labeled(self.headwinds.lower_value.knots(), lower_wind_lower_altitude, lower_middle_tween, lower_wind_upper_altitude),
             PerformanceRow::new_labeled(self.headwind_kts, lower_tween, distance_at_elevation, upper_tween),
-            PerformanceRow::new_labeled(self.headwinds.upper_value, upper_wind_lower_altitude, upper_middle_tween, upper_wind_upper_altitude)
+            PerformanceRow::new_labeled(self.headwinds.upper_value.knots(), upper_wind_lower_altitude, upper_middle_tween, upper_wind_upper_altitude)
         ];
 
         let standard_temperature_correction_interval = 35.0;

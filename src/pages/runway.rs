@@ -86,8 +86,8 @@ pub async fn post(Form(config): Form<RunwayConfig>) -> impl IntoResponse {
     let headwind = metar.wind.calc_headwind_component_from_metar_wind_value(config.heading);
     let temperature = Temperature::Celsius(*metar.temperature.unwrap() as i16);
 
-    let temperature_f = temperature.fahrenheit().expect("To convert to farenheight");
-    let headwind_kts = headwind.knots().expect("To convert to knots");
+    let temperature_f = temperature.fahrenheit();
+    let headwind_kts = headwind.knots();
 
     get_response(config.is_take_off, config.is_grass, config.elevation, temperature_f, headwind_kts).await
 }
