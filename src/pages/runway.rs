@@ -64,7 +64,7 @@ async fn get_response(is_take_off: Option<bool>, is_grass: Option<bool>, elevati
 
     let runway_raw_html = template.render().unwrap();
     let aircraft_raw_html =  if is_take_off {
-        cessna150j::get_raw_html_for_take_off(headwind_kts, temperature_f, elevation_ft, standard_temperature_f, Some(is_grass))
+        cessna150j::get_raw_html_for_take_off(headwind_kts, temperature_f, elevation_ft, standard_temperature_f, Some(is_grass), true)
     } else {
         cessna150j::get_raw_html_for_landing(headwind_kts, temperature_f, elevation_ft, standard_temperature_f, Some(is_grass))
     };

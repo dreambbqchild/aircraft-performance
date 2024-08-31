@@ -21,6 +21,7 @@ pub struct PerformanceParameters {
 #[derive(Template)]
 #[template(path = "partials/aircraft/cessna150j/take-off.html")]
 pub struct TakeOffTemplate {
+    start_take_off_flow: bool,
     is_grass: bool,
     calcs: TakeOff,
     cessna: Cessna150J
@@ -40,10 +41,11 @@ pub fn get_raw_html<T>(headwind_kts: i16, temperature_f: i16, elevation_ft: i16,
     template.render().unwrap()
 }
 
-pub fn get_raw_html_for_take_off(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>) -> String {
+pub fn get_raw_html_for_take_off(headwind_kts: i16, temperature_f: i16, elevation_ft: i16, standard_temperature_f: i16, is_grass: Option<bool>, start_take_off_flow: bool) -> String {
     get_raw_html(headwind_kts, temperature_f, elevation_ft, standard_temperature_f, &|cessna| {
         let calcs = cessna.calc_take_off(); 
         TakeOffTemplate {
+            start_take_off_flow,
             is_grass: match is_grass { Some(value) => value, None => false },
             calcs,
             cessna
@@ -55,7 +57,7 @@ pub async fn get_for_take_off(parameters: Query<PerformanceParameters>) -> Respo
     if parameters.headwind_kts < 0 {
         get_error_response(&parameters)
     } else {
-        let raw_html = get_raw_html_for_take_off(parameters.headwind_kts, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f, parameters.is_grass);
+        let raw_html = get_raw_html_for_take_off(parameters.headwind_kts, parameters.temperature_f, parameters.elevation_ft, parameters.standard_temperature_f, parameters.is_grass, false);
         let page = ToPageTemplate {
             page_title:String::from("Cessna 150 J Take Off Performance"),
             raw_html
