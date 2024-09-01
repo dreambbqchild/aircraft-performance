@@ -159,21 +159,22 @@ impl Cessna150J {
     }
 
     pub fn calc_take_off(&self) -> TakeOff {
-        let lower_wind_lower_altitude = get_take_off_distance(&self.headwinds.lower_value, &self.atmosphere_bounds.lower.indexer).expect("To get lower_wind_lower_altitude.");
-        let lower_wind_upper_altitude = get_take_off_distance(&self.headwinds.lower_value, &self.atmosphere_bounds.upper.indexer).expect("To get lower_wind_upper_altitude.");
-        let upper_wind_lower_altitude = get_take_off_distance(&self.headwinds.upper_value, &self.atmosphere_bounds.lower.indexer).expect("To get upper_wind_lower_altitude.");
-        let upper_wind_upper_altitude = get_take_off_distance(&self.headwinds.upper_value, &self.atmosphere_bounds.upper.indexer).expect("To get upper_wind_upper_altitude.");
+        let lower_row_lower_distance = get_take_off_distance(&self.headwinds.lower_value, &self.atmosphere_bounds.lower.indexer).expect("To get lower_wind_lower_altitude.");
+        let lower_row_upper_distance = get_take_off_distance(&self.headwinds.lower_value, &self.atmosphere_bounds.upper.indexer).expect("To get lower_wind_upper_altitude.");
+        let upper_row_lower_distance = get_take_off_distance(&self.headwinds.upper_value, &self.atmosphere_bounds.lower.indexer).expect("To get upper_wind_lower_altitude.");
+        let upper_row_upper_distance = get_take_off_distance(&self.headwinds.upper_value, &self.atmosphere_bounds.upper.indexer).expect("To get upper_wind_upper_altitude.");
 
-        let lower_tween = self.headwind_tween_percentage.percent_of_distance(lower_wind_lower_altitude, upper_wind_lower_altitude);
-        let lower_middle_tween = self.altitude_tween_percentage.percent_of_distance(lower_wind_lower_altitude, lower_wind_upper_altitude);
-        let upper_tween = self.headwind_tween_percentage.percent_of_distance(lower_wind_upper_altitude, upper_wind_upper_altitude);
-        let upper_middle_tween = self.altitude_tween_percentage.percent_of_distance(upper_wind_lower_altitude, upper_wind_upper_altitude);
-        let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(lower_tween, upper_tween);
+        let lower_row_middle_tween = self.altitude_tween_percentage.percent_of_distance(lower_row_lower_distance, lower_row_upper_distance);
+        let upper_row_middle_tween = self.altitude_tween_percentage.percent_of_distance(upper_row_lower_distance, upper_row_upper_distance);
+
+        let middle_row_lower_tween = self.headwind_tween_percentage.percent_of_distance(lower_row_lower_distance, upper_row_lower_distance);
+        let middle_row_upper_tween = self.headwind_tween_percentage.percent_of_distance(lower_row_upper_distance, upper_row_upper_distance);
+        let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(middle_row_lower_tween, middle_row_upper_tween);
 
         let takeoff_distances = [
-            PerformanceRow::new_labeled(self.headwinds.lower_value.knots(), lower_wind_lower_altitude, lower_middle_tween, lower_wind_upper_altitude),
-            PerformanceRow::new_labeled(self.headwind_kts, lower_tween, distance_at_elevation, upper_tween),
-            PerformanceRow::new_labeled(self.headwinds.upper_value.knots(), upper_wind_lower_altitude, upper_middle_tween, upper_wind_upper_altitude)
+            PerformanceRow::new_labeled(self.headwinds.lower_value.knots(), lower_row_lower_distance, lower_row_middle_tween, lower_row_upper_distance),
+            PerformanceRow::new_labeled(self.headwind_kts, middle_row_lower_tween, distance_at_elevation, middle_row_upper_tween),
+            PerformanceRow::new_labeled(self.headwinds.upper_value.knots(), upper_row_lower_distance, upper_row_middle_tween, upper_row_upper_distance)
         ];
 
         let standard_temperature_correction_interval = 35.0;
@@ -196,12 +197,12 @@ impl Cessna150J {
     }
 
     pub fn calc_landing(&self) -> Landing {
-        let lower_altitude = get_landing_distance(&self.atmosphere_bounds.lower.indexer).expect("To get lower_altitude.");
-        let upper_altitude = get_landing_distance(&self.atmosphere_bounds.upper.indexer).expect("To get upper_altitude.");
+        let lower_distance = get_landing_distance(&self.atmosphere_bounds.lower.indexer).expect("To get lower_altitude.");
+        let upper_distance = get_landing_distance(&self.atmosphere_bounds.upper.indexer).expect("To get upper_altitude.");
         
-        let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(lower_altitude, upper_altitude);
+        let distance_at_elevation = self.altitude_tween_percentage.percent_of_distance(lower_distance, upper_distance);
 
-        let landing_distances = PerformanceRow::new_unlabeled(lower_altitude, distance_at_elevation, upper_altitude);
+        let landing_distances = PerformanceRow::new_unlabeled(lower_distance, distance_at_elevation, upper_distance);
 
         let headwind_correction_percentage = (self.headwind_kts as f64 / 4.0) * 0.1;
         let distance_with_headwind = Distance::new_from_f64(

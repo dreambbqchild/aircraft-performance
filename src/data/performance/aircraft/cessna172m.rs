@@ -2,15 +2,18 @@
 NOTES:
 1. Maximum performance technique as specified in Section 4.
 2. Prior to takeoff from fields above 3000 feet elevation, the mixture should be leaned to give maximum RPM in a full throttle,
-3. Decrease distances 10% for each 9 knots headwind. For operation with tailwinds up to 10 Knots, inrease distances by 10%
-for each 2 knots.
+3. Decrease distances 10% for each 9 knots headwind. For operation with tailwinds up to 10 Knots, increase distances by 10% for each 2 knots.
 4. Where distance value has been deleted, climb performance after lift-off is less than 150 pm at takeoff speed.
-For operation on a dry, grass runway, increase distances by 15% of the "ground roll" figure.
+5. For operation on a dry, grass runway, increase distances by 15% of the "ground roll" figure.
+
+1. Maximum performance technique as specified in Section 4.
+2. Decrease distances 10% for each 9 knots headwind. For operation with tailwinds up to 10 knots, increase distances by 10% for each 2 knots.
+3. For operation on a dry, grass runway, increase distances by 45% of the "ground roll" figure.
 */
 
 use std::cmp::max;
 
-use crate::data::performance::distance::Distance;
+use crate::{data::performance::{distance::Distance, performance_row::PerformanceRow}, math::{FloatingCalcs, Pressure, Velocity}};
 
 const TAKE_OFF_AT_2300_LBS: [[Option<Distance>; 5]; 9] = [
 	[Some(Distance(775, 1380)),  Some(Distance(835, 1475)),  Some(Distance(895, 1575)),  Some(Distance(960, 1685)),  Some(Distance(1030, 1795))],
@@ -60,6 +63,14 @@ const LANDING_AT_2300_LBS: [[Distance; 5]; 9] = [
 	[ Distance(665, 1500), Distance(690, 1540), Distance(710, 1580), Distance(735, 1620), Distance(760, 1665)]
 ];
 
+struct AircraftWeightRowResult<T> {
+	presure_altitude_ft: i16,
+	lower_temperature_c: i16,
+	lower_distance: T,
+	upper_temperature_c: i16,
+	upper_distance: T
+}
+
 #[derive(Clone, Copy)]
 pub enum AircraftWeight {
 	At2300Lbs = 2300,
@@ -73,61 +84,212 @@ fn calc_row_column(pressure_altitude: i16, temperature_c: i16) -> Result<(usize,
 		return Err("Altitude out of bounds");
 	}
 
-	let col = max(0, temperature_c / 10) as usize;
-	if col > 5  {
+	let column = max(0, temperature_c / 10) as usize;
+	if column > 5  {
 		return Err("Temperature out of bounds");
 	}
 
-	Ok((row, col))
+	Ok((row, column))
 }
 
 impl AircraftWeight {
-	fn find_take_off_distance(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Option<Distance>, &'static str> {
+	pub fn find_takeoff_weight(weight_lbs: i16) -> Result<AircraftWeight, &'static str> {
+		if weight_lbs > 2300 {
+			Err("Over max weight")
+		} else if weight_lbs > 2100 {
+			Ok(Self::At2300Lbs)			
+		} else if weight_lbs > 1900 {
+			Ok(Self::At2100Lbs)
+		} else {
+			Ok(Self::At1900Lbs)
+		}
+	}
+
+	fn find_take_off_distance(&self, pressure_altitude: i16, temperature_c: i16) -> Result<AircraftWeightRowResult<Option<Distance>>, &'static str> {
 		let result = calc_row_column(pressure_altitude, temperature_c);
 		if result.is_err() {
 			return Err(result.err().unwrap());
 		}
 
 		let (row, column) = result.ok().unwrap();
+		if column == 4 && temperature_c % 10 != 0 {
+			return Err("Upper column out of bounds");
+		}
+
+		let upper_column = if temperature_c % 10 == 0 {
+			column
+		} else {
+			column + 1
+		};
 
 		let table = match self {
 			AircraftWeight::At2300Lbs => &TAKE_OFF_AT_2300_LBS,
 			AircraftWeight::At2100Lbs => &TAKE_OFF_AT_2100_LBS,
 			AircraftWeight::At1900Lbs => &TAKE_OFF_AT_1900_LBS
 		};
-	
-		return Ok(table[row][column]);
+
+		return Ok(AircraftWeightRowResult {
+			presure_altitude_ft: (row * 1000) as i16,
+			lower_temperature_c: (column * 10) as i16,
+			lower_distance: table[row][column],
+			upper_temperature_c: (upper_column * 10) as i16,
+			upper_distance: table[row][upper_column]
+		});
 	}
 	
-	pub fn take_off_distance_upper_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Option<Distance>, &'static str> {
-		self.find_take_off_distance(pressure_altitude + 1000, temperature_c)
+	fn take_off_distance_upper_bound(&self, pressure_altitude_ft: i16, temperature_c: i16) -> Result<AircraftWeightRowResult<Option<Distance>>, &'static str> {
+		self.find_take_off_distance(pressure_altitude_ft + 1000, temperature_c)
 	}
 	
-	pub fn take_off_distance_lower_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Option<Distance>, &'static str> {
-		self.find_take_off_distance(pressure_altitude, temperature_c)
+	fn take_off_distance_lower_bound(&self, pressure_altitude_ft: i16, temperature_c: i16) -> Result<AircraftWeightRowResult<Option<Distance>>, &'static str> {
+		self.find_take_off_distance(pressure_altitude_ft, temperature_c)
 	}
 
-	fn find_landing_distance(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Distance, &'static str> {
+	fn find_landing_distance(&self, pressure_altitude_ft: i16, temperature_c: i16) -> Result<AircraftWeightRowResult<Distance>, &'static str> {
 		match self {
 			AircraftWeight::At2300Lbs => {
-				let result = calc_row_column(pressure_altitude, temperature_c);
+				let result = calc_row_column(pressure_altitude_ft, temperature_c);
 				if result.is_err() {
 					return Err(result.err().unwrap());
 				}
 
 				let (row, column) = result.ok().unwrap();
-			
-				return Ok(LANDING_AT_2300_LBS[row][column]);
+				if column == 4 && temperature_c % 10 != 0 {
+					return Err("Upper column out of bounds");
+				}
+		
+				let upper_column = if temperature_c % 10 == 0 {
+					column
+				} else {
+					column + 1
+				};
+
+				return Ok(AircraftWeightRowResult {
+					presure_altitude_ft: (row * 1000) as i16,
+					lower_temperature_c: (column * 10) as i16,
+					lower_distance: LANDING_AT_2300_LBS[row][column],
+					upper_temperature_c: (upper_column * 10) as i16,
+					upper_distance: LANDING_AT_2300_LBS[row][upper_column]
+				});
 			},
 			_=> Err("Performance not defined")
 		}
 	}
 
-	pub fn landing_distance_upper_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Distance, &'static str> {
-		self.find_landing_distance(pressure_altitude + 1000, temperature_c)
+	fn landing_distance_upper_bound(&self, pressure_altitude_ft: i16, temperature_c: i16) -> Result<AircraftWeightRowResult<Distance>, &'static str> {
+		self.find_landing_distance(pressure_altitude_ft + 1000, temperature_c)
 	}
 	
-	pub fn landing_distance_lower_bound(&self, pressure_altitude: i16, temperature_c: i16) -> Result<Distance, &'static str> {
-		self.find_landing_distance(pressure_altitude, temperature_c)
+	fn landing_distance_lower_bound(&self, pressure_altitude_ft: i16, temperature_c: i16) -> Result<AircraftWeightRowResult<Distance>, &'static str> {
+		self.find_landing_distance(pressure_altitude_ft, temperature_c)
+	}
+}
+
+pub struct Corrections {
+    pub wind_correction_percentage: f64,
+    pub distance_corrected_for_wind: Distance,
+	pub grass_offset: i16,
+    pub distance_corrected_for_grass: Distance
+}
+
+pub struct Performance {
+	pub takeoff_distances: [PerformanceRow; 3],
+	pub corrections: Corrections
+}
+
+pub struct Cessna172M {
+	pub headwind: Velocity,
+	pub pressure_altitude_ft: i16,
+	pub temperature_c: i16
+}
+
+impl Cessna172M {
+	pub fn new(headwind: Velocity, pressure: Pressure, elevation_ft: i16, temperature_c: i16) -> Self {
+		let pressure_altitude_ft = pressure.altitude(elevation_ft);
+
+		Cessna172M {
+			headwind,
+			pressure_altitude_ft,
+			temperature_c
+		}
+	}
+
+	fn calc_corrections(&self, distance_at_elevation: Distance, grass_ground_roll_percentage: f64) -> Corrections {
+		let headwind_kts = self.headwind.knots();
+		let wind_correction_percentage = if headwind_kts > 0 {
+			1.0 - (0.1 * (headwind_kts as f64 / 9.0))
+		} else {
+			1.0 + (0.1 * (headwind_kts as f64 / 2.0))
+		};
+
+		let distance_corrected_for_wind = Distance::new_from_f64(
+			distance_at_elevation.ground_run() as f64 * wind_correction_percentage, 
+			distance_at_elevation.clear_50_ft_obstacle() as f64 * wind_correction_percentage);
+
+		let grass_offset = (distance_corrected_for_wind.ground_run() as f64 * (1.0 + grass_ground_roll_percentage)).round() as i16;
+		let distance_corrected_for_grass = Distance(distance_corrected_for_wind.ground_run() + grass_offset, distance_corrected_for_wind.clear_50_ft_obstacle() + grass_offset); 
+
+		Corrections {
+			wind_correction_percentage,
+			distance_corrected_for_wind,
+			grass_offset,
+			distance_corrected_for_grass
+		}
+	}
+
+	fn calc_performance(&self, lower_row: AircraftWeightRowResult<Distance>, upper_row: AircraftWeightRowResult<Distance>, grass_ground_roll_percentage: f64) -> Performance {
+		let pressure_altitude_tween_percentage = (self.pressure_altitude_ft as f64).percent_i16(lower_row.presure_altitude_ft, upper_row.presure_altitude_ft);
+		let temperature_c_tween_percentage = (self.temperature_c as f64).percent_i16(lower_row.lower_temperature_c, lower_row.upper_temperature_c);
+		
+		let lower_row_lower_distance = lower_row.lower_distance;
+		let lower_row_upper_distance = lower_row.upper_distance;
+		let upper_row_lower_distance = upper_row.lower_distance;
+		let upper_row_upper_distance = upper_row.upper_distance;
+
+		let lower_row_middle_tween = temperature_c_tween_percentage.percent_of_distance(lower_row_lower_distance, lower_row_upper_distance);
+		let upper_row_middle_tween = temperature_c_tween_percentage.percent_of_distance(upper_row_lower_distance, upper_row_upper_distance);
+
+		let middle_row_lower_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row_lower_distance, upper_row_lower_distance);
+		let middle_row_upper_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row_upper_distance, upper_row_upper_distance);
+		let distance_at_elevation = pressure_altitude_tween_percentage.percent_of_distance(lower_row_middle_tween, upper_row_middle_tween);
+
+		let takeoff_distances = [
+            PerformanceRow::new_labeled(lower_row.presure_altitude_ft, lower_row_lower_distance, lower_row_middle_tween, lower_row_upper_distance),
+            PerformanceRow::new_labeled(self.pressure_altitude_ft, middle_row_lower_tween, distance_at_elevation, middle_row_upper_tween),
+            PerformanceRow::new_labeled(upper_row.presure_altitude_ft, upper_row_lower_distance, upper_row_middle_tween, upper_row_upper_distance)
+        ];
+
+		Performance {
+			takeoff_distances,
+			corrections: self.calc_corrections(distance_at_elevation, grass_ground_roll_percentage)
+		}
+	}
+
+	fn convert_to_definate_row_result(&self, row: AircraftWeightRowResult<Option<Distance>>) -> AircraftWeightRowResult<Distance> {
+		AircraftWeightRowResult {
+			presure_altitude_ft: row.presure_altitude_ft,
+			lower_temperature_c: row.lower_temperature_c,
+			lower_distance: row.lower_distance.expect("To get the lower distance data"),
+			upper_temperature_c: row.upper_temperature_c,
+			upper_distance: row.upper_distance.expect("to get the upper distance data")
+		}
+	}
+
+	pub fn take_off(&self, weight_lbs: i16) -> Performance {
+		let takeoff_weight = AircraftWeight::find_takeoff_weight(weight_lbs).expect("To get the takeoff weight");
+		let lower_row_optional = takeoff_weight.take_off_distance_lower_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the lower bound performance numbers");
+		let upper_row_optional = takeoff_weight.take_off_distance_upper_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the upper bound performance numbers");
+
+		let lower_row = self.convert_to_definate_row_result(lower_row_optional);
+		let upper_row = self.convert_to_definate_row_result(upper_row_optional);
+
+		self.calc_performance(lower_row, upper_row, 0.15)
+	}
+
+	pub fn landing(&self) -> Performance {
+		let lower_row = AircraftWeight::At2300Lbs.landing_distance_lower_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the landing performance");
+		let upper_row = AircraftWeight::At2300Lbs.landing_distance_upper_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the landing performance");
+
+		self.calc_performance(lower_row, upper_row, 0.45)
 	}
 }

@@ -44,27 +44,26 @@ impl Temperature {
             Temperature::Fahrenheit(f) => f
         }
     }
+
+    pub fn standard_temperature(elevation_ft: i16) -> Temperature {
+        Temperature::Fahrenheit((59.0 - ((elevation_ft as f64 / 1000.0) * 3.5)) as i16)
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
 pub enum Pressure {
-    Altimeter(f64),
-    Altitude(f64)
+    Altimeter(f64)
 }
 
 impl Pressure {
-    pub fn altimeter(self, elevation_ft: i16) -> f64 {
-        match self {
-            Pressure::Altimeter(p) => p,
-            Pressure::Altitude(p) => (29.92 - p) * 1000.0 + elevation_ft as f64
-        }   
+    pub fn standard() -> f64 {
+        29.92
     }
 
-    pub fn altitude(self, elevation_ft: i16) -> f64 {
+    pub fn altitude(self, elevation_ft: i16) -> i16 {
         match self {
-            Pressure::Altimeter(p) => (p + elevation_ft as f64 + 29920.0) / 1000.0,
-            Pressure::Altitude(p) => p
-        }      
+            Pressure::Altimeter(p) => ((Pressure::standard() - p) * 1000.0 + elevation_ft as f64).round() as i16
+        }   
     }
 }
 

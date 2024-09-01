@@ -42,11 +42,10 @@ pub struct RunwayTemplate {
 }
 
 async fn get_response(is_take_off: Option<bool>, is_grass: Option<bool>, elevation_ft: i16, temperature_f: i16, headwind_kts: i16) -> impl IntoResponse {
-
     let is_take_off = resolve_boolean(is_take_off);
     let is_grass = resolve_boolean(is_grass);
 
-    let standard_temperature_f = (59.0 - ((elevation_ft as f64 / 1000.0) * 3.5)) as i16;
+    let standard_temperature_f = Temperature::standard_temperature(elevation_ft).fahrenheit();
 
     let mode = if is_take_off { "Take Off".to_string() } else { "Landing".to_string() };
     let page_title = format!("{mode} Performance");
