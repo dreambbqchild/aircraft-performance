@@ -8,7 +8,7 @@ use axum::{
 pub mod airport;
 pub mod runway;
 
-pub mod cessna150j;
+pub mod aircraft_pages;
 
 fn resolve_boolean(opt: Option<bool>) -> bool {
     match  opt {

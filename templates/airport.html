@@ -52,7 +52,7 @@
                             </td>
                             <td>{{ runway.le_ident }}</td>
                             <td><input type="hidden" name="heading" value="{{ runway.le_heading }}">{{ runway.le_heading }}</td>
-                            <td><input type="hidden" name="elevation" value="{{ runway.le_elevation }}">{{ runway.le_elevation }}'</td>
+                            <td><input type="hidden" name="elevation_ft" value="{{ runway.le_elevation }}">{{ runway.le_elevation }}'</td>
                             <td>{{ runway.surface }}</td>
                             <td><input type="hidden" name="is_grass" value="{{ runway.is_grass }}"><input type="checkbox" disabled{% if runway.is_grass %} checked {% endif %}></td>
                             <td><input type="hidden" name="length" value="{{ runway.length }}">{{ runway.length }}'</td>
@@ -69,7 +69,7 @@
                             </td>
                             <td>{{ runway.he_ident }}</td>
                             <td><input type="hidden" name="heading" value="{{ runway.he_heading }}">{{ runway.he_heading }}</td>
-                            <td><input type="hidden" name="elevation" value="{{ runway.he_elevation }}">{{ runway.he_elevation }}'</td>
+                            <td><input type="hidden" name="elevation_ft" value="{{ runway.he_elevation }}">{{ runway.he_elevation }}'</td>
                             <td>{{ runway.surface }}</td>
                             <td><input type="hidden" name="is_grass" value="{{ runway.is_grass }}"><input type="checkbox" disabled{% if runway.is_grass %} checked {% endif %}></td>
                             <td><input type="hidden" name="length" value="{{ runway.length }}">{{ runway.length }}'</td>

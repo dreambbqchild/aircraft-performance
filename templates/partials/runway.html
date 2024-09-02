@@ -5,7 +5,7 @@
     </head>
     <h2>Conditions for {{mode.to_lowercase()}} are:</h2>
     <ul>
-        <li>Elevation: {{ elevation }}'</li>
+        <li>Elevation: {{ elevation_ft }}'</li>
         {% if headwind_kts >= 0 %}
             <li>Headwind: {{headwind_kts}} kts</li>
         {% else %}
@@ -20,7 +20,7 @@
         <mrow>
             <mo>(</mo>
             <mfrac>
-                <mn>{{elevation}}'</mn>
+                <mn>{{elevation_ft}}'</mn>
                 <mn>1000'</mn>
             </mfrac>
             <mo>&times;</mo>

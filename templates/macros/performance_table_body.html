@@ -1,0 +1,89 @@
+{%- import "macros/percent_of.html" as percent_of -%}
+
+{% macro render(label_unit, performance_table, vertical_tween_percentage, horizontal_tween_percentage) %}
+    {% for (i, row) in performance_table.iter().enumerate() %}
+    <tr>
+        <td>{{row.label.expect("label to be set")}} {{label_unit}}</td>
+        <td>
+            {% if i == 1 %}
+                {% call percent_of::render(
+                    vertical_tween_percentage,
+                    performance_table[0].lower_bound.ground_run(), 
+                    performance_table[2].lower_bound.ground_run(), 
+                    "'")
+                %}
+            {% endif %}
+            {{row.lower_bound.ground_run()}}'
+        </td>
+        <td>
+            {% if i == 1 %}
+                {% call percent_of::render(
+                    vertical_tween_percentage,
+                    performance_table[0].lower_bound.clear_50_ft_obstacle(), 
+                    performance_table[2].lower_bound.clear_50_ft_obstacle(), 
+                    "'")
+                %}
+            {% endif %}
+            {{row.lower_bound.clear_50_ft_obstacle()}}'
+        </td>
+        <td>
+            {% if i == 1 %}
+                {% call percent_of::render(
+                    vertical_tween_percentage,
+                    performance_table[0].middle_value.ground_run(), 
+                    performance_table[2].middle_value.ground_run(), 
+                    "'")
+                %}
+            {% else %}
+                    {% call percent_of::render(
+                        horizontal_tween_percentage,
+                        row.lower_bound.ground_run(), 
+                        row.upper_bound.ground_run(), 
+                        "'")
+                    %}
+            {% endif %}
+            {{row.middle_value.ground_run()}}'
+        </td>
+        <td>
+            {% if i == 1 %}
+                {% call percent_of::render(
+                    vertical_tween_percentage,
+                    performance_table[0].middle_value.clear_50_ft_obstacle(), 
+                    performance_table[2].middle_value.clear_50_ft_obstacle(), 
+                    "'")
+                %}
+            {% else %}
+                {% call percent_of::render(
+                    horizontal_tween_percentage,
+                    row.lower_bound.clear_50_ft_obstacle(), 
+                    row.upper_bound.clear_50_ft_obstacle(), 
+                    "'")
+                %}
+            {% endif %}
+            {{row.middle_value.clear_50_ft_obstacle()}}'
+        </td>
+        <td>
+            {% if i == 1 %}
+                {% call percent_of::render(
+                    vertical_tween_percentage,
+                    performance_table[0].upper_bound.ground_run(), 
+                    performance_table[2].upper_bound.ground_run(), 
+                    "'")
+                %}
+            {% endif %}
+            {{row.upper_bound.ground_run()}}'
+        </td>
+        <td>
+            {% if i == 1 %}
+                {% call percent_of::render(
+                    vertical_tween_percentage,
+                    performance_table[0].upper_bound.clear_50_ft_obstacle(), 
+                    performance_table[2].upper_bound.clear_50_ft_obstacle(), 
+                    "'")
+                %}
+            {% endif %}
+            {{row.upper_bound.clear_50_ft_obstacle()}}'
+        </td>
+    </tr>
+    {% endfor %}
+{% endmacro %}

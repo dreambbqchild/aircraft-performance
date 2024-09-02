@@ -50,20 +50,36 @@ impl Temperature {
     }
 }
 
+const SANDARD_PRESSURE_IN_HG: f32 = 29.92;
+
 #[derive(Debug, Clone, Copy)]
 pub enum Pressure {
-    Altimeter(f64)
+    InchesOfMercury(f32)
 }
 
 impl Pressure {
-    pub fn standard() -> f64 {
-        29.92
+    pub fn in_hg(self) -> f32 {
+        match self {
+            Pressure::InchesOfMercury(p) => p
+        }
     }
 
     pub fn altitude(self, elevation_ft: i16) -> i16 {
         match self {
-            Pressure::Altimeter(p) => ((Pressure::standard() - p) * 1000.0 + elevation_ft as f64).round() as i16
+            Pressure::InchesOfMercury(p) => ((SANDARD_PRESSURE_IN_HG - p) * 1000.0 + elevation_ft as f32).round() as i16
         }   
+    }
+
+    pub fn from_metar(metar: metar::Metar) -> Result<Pressure, &'static str> {
+        match metar.pressure {
+            metar::Data::Known(k) => {
+                match k {
+                    metar::Pressure::InchesOfMercury(p) => Ok(Pressure::InchesOfMercury(p)),
+                    metar::Pressure::Hectopascals(p) => Ok(Pressure::InchesOfMercury(p as f32 / 33.864f32))
+                }
+            },
+            metar::Data::Unknown => Err("Pressure not available.")
+        }
     }
 }
 
@@ -103,7 +119,7 @@ impl FloatingCalcs for f64 {
     }
 
     fn percent_velocity(&self, lower_bound: Velocity, upper_bound: Velocity) -> f64 {
-        self.percent_of(lower_bound.knots() as f64, upper_bound.knots() as f64)
+        self.percent(lower_bound.knots() as f64, upper_bound.knots() as f64)
     }
 
     fn percent_of_distance(&self, lower_bound: Distance, upper_bound: Distance) -> Distance {

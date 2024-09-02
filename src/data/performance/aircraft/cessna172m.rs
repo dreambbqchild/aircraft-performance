@@ -193,6 +193,8 @@ pub struct Corrections {
 }
 
 pub struct Performance {
+	pub pressure_altitude_tween_percentage: f64,
+	pub temperature_c_tween_percentage: f64,
 	pub takeoff_distances: [PerformanceRow; 3],
 	pub corrections: Corrections
 }
@@ -240,26 +242,23 @@ impl Cessna172M {
 	fn calc_performance(&self, lower_row: AircraftWeightRowResult<Distance>, upper_row: AircraftWeightRowResult<Distance>, grass_ground_roll_percentage: f64) -> Performance {
 		let pressure_altitude_tween_percentage = (self.pressure_altitude_ft as f64).percent_i16(lower_row.presure_altitude_ft, upper_row.presure_altitude_ft);
 		let temperature_c_tween_percentage = (self.temperature_c as f64).percent_i16(lower_row.lower_temperature_c, lower_row.upper_temperature_c);
-		
-		let lower_row_lower_distance = lower_row.lower_distance;
-		let lower_row_upper_distance = lower_row.upper_distance;
-		let upper_row_lower_distance = upper_row.lower_distance;
-		let upper_row_upper_distance = upper_row.upper_distance;
 
-		let lower_row_middle_tween = temperature_c_tween_percentage.percent_of_distance(lower_row_lower_distance, lower_row_upper_distance);
-		let upper_row_middle_tween = temperature_c_tween_percentage.percent_of_distance(upper_row_lower_distance, upper_row_upper_distance);
+		let lower_row_middle_tween = temperature_c_tween_percentage.percent_of_distance(lower_row.lower_distance, lower_row.upper_distance);
+		let upper_row_middle_tween = temperature_c_tween_percentage.percent_of_distance(upper_row.lower_distance, upper_row.upper_distance);
 
-		let middle_row_lower_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row_lower_distance, upper_row_lower_distance);
-		let middle_row_upper_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row_upper_distance, upper_row_upper_distance);
+		let middle_row_lower_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row.lower_distance, upper_row.lower_distance);
+		let middle_row_upper_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row.upper_distance, upper_row.upper_distance);
 		let distance_at_elevation = pressure_altitude_tween_percentage.percent_of_distance(lower_row_middle_tween, upper_row_middle_tween);
 
 		let takeoff_distances = [
-            PerformanceRow::new_labeled(lower_row.presure_altitude_ft, lower_row_lower_distance, lower_row_middle_tween, lower_row_upper_distance),
+            PerformanceRow::new_labeled(lower_row.presure_altitude_ft, lower_row.lower_distance, lower_row_middle_tween, lower_row.upper_distance),
             PerformanceRow::new_labeled(self.pressure_altitude_ft, middle_row_lower_tween, distance_at_elevation, middle_row_upper_tween),
-            PerformanceRow::new_labeled(upper_row.presure_altitude_ft, upper_row_lower_distance, upper_row_middle_tween, upper_row_upper_distance)
+            PerformanceRow::new_labeled(upper_row.presure_altitude_ft, upper_row.lower_distance, upper_row_middle_tween, upper_row.upper_distance)
         ];
 
 		Performance {
+			pressure_altitude_tween_percentage,
+			temperature_c_tween_percentage,
 			takeoff_distances,
 			corrections: self.calc_corrections(distance_at_elevation, grass_ground_roll_percentage)
 		}
@@ -275,7 +274,7 @@ impl Cessna172M {
 		}
 	}
 
-	pub fn take_off(&self, weight_lbs: i16) -> Performance {
+	pub fn calc_take_off(&self, weight_lbs: i16) -> Performance {
 		let takeoff_weight = AircraftWeight::find_takeoff_weight(weight_lbs).expect("To get the takeoff weight");
 		let lower_row_optional = takeoff_weight.take_off_distance_lower_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the lower bound performance numbers");
 		let upper_row_optional = takeoff_weight.take_off_distance_upper_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the upper bound performance numbers");
@@ -286,7 +285,7 @@ impl Cessna172M {
 		self.calc_performance(lower_row, upper_row, 0.15)
 	}
 
-	pub fn landing(&self) -> Performance {
+	pub fn calc_landing(&self) -> Performance {
 		let lower_row = AircraftWeight::At2300Lbs.landing_distance_lower_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the landing performance");
 		let upper_row = AircraftWeight::At2300Lbs.landing_distance_upper_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the landing performance");
 
