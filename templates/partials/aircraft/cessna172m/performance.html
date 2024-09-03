@@ -1,0 +1,180 @@
+{%- import "macros/performance_table_body.html" as performance_table_body -%}
+{%- import "macros/percent_between.html" as percent_between -%}
+{%- import "macros/percent_of.html" as percent_of -%}
+
+        <p>
+            The pressure altitude for the altimiter setting of {{ "{:.2}"|format(cessna.pressure_in_hg) }}" at {{cessna.elevation_ft}}' is:
+            <math>
+                <mo>(</mo>
+                <mn>29.92"</mn>
+                <mo>&minus;</mo>
+                <mn>{{ "{:.2}"|format(cessna.pressure_in_hg) }}"</mn>
+                <mo>)</mo>
+                <mo>&times;</mo>
+                <mn>1000</mn>
+                <mo>+</mo>
+                <mn>{{ cessna.elevation_ft }}'</mn>
+                <mo>≈</mo>
+                <mn>{{ cessna.pressure_altitude_ft }}'</mn>
+            </math>
+        </p>
+
+        <p>
+            The temperature of {{cessna.temperature_c}}°C is
+            {% call percent_between::render(cessna.temperature_c, 
+                performance.lower_temperature_c, 
+                performance.upper_temperature_c,
+                performance.temperature_c_tween_percentage, 
+                "°C") 
+            %}
+            between the lower bound of {{performance.lower_temperature_c}}°C and the upper bound of {{performance.upper_temperature_c}}°C.
+        </p>
+
+        <p>
+            {% if performance.lower_temperature_c == performance.upper_temperature_c && performance.distance_rows[0].label == performance.distance_rows[1].label %}
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th colspan="2">{{performance.lower_temperature_c}}°C</th>
+                    </tr>
+                    <tr>
+                        <th>Pressure Altitude Ft</th>
+                        <th>Ground Roll</th>
+                        <th>Total to Clear 50' Obs</th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    {% call performance_table_body::render_match(
+                        "'",
+                        performance.distance_rows)
+                    %}
+                </tbody>
+            </table>
+            
+            {% else %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th colspan="2">{{performance.lower_temperature_c}}°C</th>
+                            <th colspan="2">{{cessna.temperature_c}}°C</th>
+                            <th colspan="2">{{performance.upper_temperature_c}}°C</th>
+                        </tr>
+                        <tr>
+                            <th>Pressure Altitude Ft</th>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>
+                            <th>Ground Run</th>
+                            <th>Total to Clear 50' Obs</th>             
+                        </tr>
+                    </thead>
+                    <tbody class="text-center">
+                        {% call performance_table_body::render3x3(
+                                "'",
+                                performance.distance_rows,
+                                performance.pressure_altitude_tween_percentage,
+                                performance.temperature_c_tween_percentage) 
+                        %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </p>
+
+        <h3>Decrease distances 10% for each 9 knots headwind. For operation with tailwinds up to 10 Knots, increase distances by 10% for each 2 knots.</h3>
+        <ul>
+            <li>
+                <math>
+                    <mn>100%</mn>
+                    <mo>{% if cessna.headwind.knots() >= 0 %} &minus; {% else %} &plus; {% endif %}</mo>
+                    <mo>(</mo>
+                    <mn>10%</mn>
+                    <mo>&times;</mo>
+                    <mrow>
+                        <mo>(</mo>
+                        <mfrac>
+                            <mn>{{ cessna.headwind.knots().abs() }} kts</mn>
+                            <mn>{% if cessna.headwind.knots() >= 0 %} 9 {% else %} 2 {% endif %} kts</mn>
+                        </mfrac>
+                        <mo>)</mo>
+                    </mrow>
+                    <mo>)</mo>
+                    <mo>≈</mo>
+                    <mn>{{"{:.2}"|format(performance.corrections.wind_correction_percentage * 100.0)}}%</mn>
+                </math>
+            </li>
+            <li>
+                Ground Run:
+                <math>
+                    <mn>{{performance.distance_rows[1].middle_value.ground_run()}}'</mn>
+                    <mo>&times;</mo>
+                    <mn>{{"{:.4}"|format(performance.corrections.wind_correction_percentage)}}</mn>
+                    <mo>≈</mo>
+                    <mn>{{performance.corrections.distance_corrected_for_wind.ground_run()}}'</mn>
+                </math>
+            </li>
+            <li>
+                Clear 50' Obs:
+                <math>
+                    <mn>{{performance.distance_rows[1].middle_value.clear_50_ft_obstacle()}}'</mn>
+                    <mo>&times;</mo>
+                    <mn>{{"{:.4}"|format(performance.corrections.wind_correction_percentage)}}</mn>
+                    <mo>≈</mo>
+                    <mn>{{performance.corrections.distance_corrected_for_wind.clear_50_ft_obstacle()}}'</mn>
+                </math>
+            </li>
+        </ul>
+        
+        {% if is_grass %}
+        <h3>For operation on a dry, grass runway, increase distances by {{"{:.0}"|format(performance.corrections.grass_ground_roll_percentage * 100.0)}}% of the "ground roll" figure.</h3>
+        <ul>
+            <li>
+                <math>
+                    <mn>{{performance.corrections.distance_corrected_for_wind.ground_run()}}'</mn>
+                    <mo>&times;</mo>
+                    <mn>{{"{:.2}"|format(performance.corrections.grass_ground_roll_percentage)}}</mn>
+                    <mo>≈</mo>
+                    <mn>{{performance.corrections.grass_offset}}'</mn>
+                </math>
+            </li>
+            <li>
+                Ground Run:
+                <math>
+                    <mn>{{performance.corrections.distance_corrected_for_wind.ground_run()}}'</mn>
+                    <mo>&plus;</mo>
+                    <mn>{{performance.corrections.grass_offset}}'</mn>
+                    <mo>&equals;</mo>
+                    <mn>{{performance.corrections.distance_corrected_for_grass.ground_run()}}'</mn>
+                </math>
+            </li>
+            <li>
+                Total to Clear 50' Obs:
+                <math>
+                    <mn>{{performance.corrections.distance_corrected_for_wind.clear_50_ft_obstacle()}}'</mn>
+                    <mo>&plus;</mo>
+                    <mn>{{performance.corrections.grass_offset}}'</mn>
+                    <mo>&equals;</mo>
+                    <mn>{{performance.corrections.distance_corrected_for_grass.clear_50_ft_obstacle()}}'</mn>
+                </math>
+            </li>
+        </ul>
+        {% endif %}
+        {% if start_take_off_flow %}
+            <form action="/airport" method="POST">
+                <table>
+                    <tr class="form-fields">
+                        <td><label for="identifier">Airport Identifier:</label></td>
+                        <td>
+                            <input type="hidden" name="is_arrival" value="true">
+                            <input type="hidden" name="aircraft_type" value="cessna172m">
+                            <input type="text" id="identifier" name="identifier"/>
+                        </td>
+                    </tr>
+                    <tr class="form-fields">
+                        <td colspan="2"><button>Continue</button></td>
+                    </tr>
+                </table>
+            </form>
+        {% endif %}

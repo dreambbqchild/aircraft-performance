@@ -10,7 +10,8 @@ use super::{PerformanceParameters, QueryPerformanceParameters};
 pub struct PerformanceTemplate {
     start_take_off_flow: bool,
     is_grass: bool,
-    performance: Performance
+    performance: Performance,
+    cessna: Cessna172M
 }
 
 fn get_tailwind_error_response(parameters: &PerformanceParameters) -> Response {
@@ -20,7 +21,7 @@ fn get_tailwind_error_response(parameters: &PerformanceParameters) -> Response {
 }
 
 fn get_raw_html<T>(parameters: &PerformanceParameters, callback: &dyn Fn(Cessna172M) -> T) -> String where T : Template {
-    let cessna = Cessna172M::new(parameters.headwind, parameters.pressure, parameters.elevation_ft, parameters.temperature.celsius());
+    let cessna = Cessna172M::new(parameters.headwind, parameters.elevation_ft, parameters.pressure, parameters.temperature.celsius());
 
     let template = callback(cessna);
     template.render().unwrap()
@@ -28,11 +29,12 @@ fn get_raw_html<T>(parameters: &PerformanceParameters, callback: &dyn Fn(Cessna1
 
 pub fn get_raw_html_for_take_off(parameters: &PerformanceParameters, start_take_off_flow: bool) -> String {
     get_raw_html(parameters, &|cessna| {
-        let performance = cessna.calc_take_off(parameters.aircraft_weight_lbs.expect("The take off weight of the aircraft is requried for the calculation")); 
+        let performance = cessna.calc_take_off(2100/*parameters.aircraft_weight_lbs.expect("The take off weight of the aircraft is requried for the calculation")*/); 
         PerformanceTemplate {
             start_take_off_flow,
             is_grass: parameters.is_grass,
-            performance
+            performance,
+            cessna
         }
     })
 }
@@ -58,7 +60,8 @@ pub fn get_raw_html_for_landing(parameters: &PerformanceParameters) -> String {
         PerformanceTemplate {
             is_grass: parameters.is_grass,
             start_take_off_flow: false,
-            performance
+            performance,
+            cessna
         }
     })
 }

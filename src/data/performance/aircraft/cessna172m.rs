@@ -187,6 +187,7 @@ impl AircraftWeight {
 
 pub struct Corrections {
     pub wind_correction_percentage: f64,
+	pub grass_ground_roll_percentage: f64,
     pub distance_corrected_for_wind: Distance,
 	pub grass_offset: i16,
     pub distance_corrected_for_grass: Distance
@@ -195,22 +196,29 @@ pub struct Corrections {
 pub struct Performance {
 	pub pressure_altitude_tween_percentage: f64,
 	pub temperature_c_tween_percentage: f64,
-	pub takeoff_distances: [PerformanceRow; 3],
+	pub lower_temperature_c: i16,
+	pub upper_temperature_c: i16,
+	pub distance_rows: [PerformanceRow; 3],
 	pub corrections: Corrections
 }
 
 pub struct Cessna172M {
 	pub headwind: Velocity,
+	pub pressure_in_hg: f32,
+	pub elevation_ft: i16,
 	pub pressure_altitude_ft: i16,
 	pub temperature_c: i16
 }
 
 impl Cessna172M {
-	pub fn new(headwind: Velocity, pressure: Pressure, elevation_ft: i16, temperature_c: i16) -> Self {
+	pub fn new(headwind: Velocity, elevation_ft: i16, pressure: Pressure, temperature_c: i16) -> Self {
 		let pressure_altitude_ft = pressure.altitude(elevation_ft);
+		let pressure_in_hg = pressure.in_hg();
 
 		Cessna172M {
 			headwind,
+			pressure_in_hg,
+			elevation_ft,
 			pressure_altitude_ft,
 			temperature_c
 		}
@@ -233,6 +241,7 @@ impl Cessna172M {
 
 		Corrections {
 			wind_correction_percentage,
+			grass_ground_roll_percentage,
 			distance_corrected_for_wind,
 			grass_offset,
 			distance_corrected_for_grass
@@ -250,7 +259,7 @@ impl Cessna172M {
 		let middle_row_upper_tween = pressure_altitude_tween_percentage.percent_of_distance(lower_row.upper_distance, upper_row.upper_distance);
 		let distance_at_elevation = pressure_altitude_tween_percentage.percent_of_distance(lower_row_middle_tween, upper_row_middle_tween);
 
-		let takeoff_distances = [
+		let distance_rows = [
             PerformanceRow::new_labeled(lower_row.presure_altitude_ft, lower_row.lower_distance, lower_row_middle_tween, lower_row.upper_distance),
             PerformanceRow::new_labeled(self.pressure_altitude_ft, middle_row_lower_tween, distance_at_elevation, middle_row_upper_tween),
             PerformanceRow::new_labeled(upper_row.presure_altitude_ft, upper_row.lower_distance, upper_row_middle_tween, upper_row.upper_distance)
@@ -259,7 +268,9 @@ impl Cessna172M {
 		Performance {
 			pressure_altitude_tween_percentage,
 			temperature_c_tween_percentage,
-			takeoff_distances,
+			lower_temperature_c: lower_row.lower_temperature_c,
+			upper_temperature_c: upper_row.upper_temperature_c,
+			distance_rows,
 			corrections: self.calc_corrections(distance_at_elevation, grass_ground_roll_percentage)
 		}
 	}

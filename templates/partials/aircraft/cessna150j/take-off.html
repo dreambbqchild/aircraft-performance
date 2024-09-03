@@ -37,11 +37,10 @@
                     </tr>
                 </thead>
                 <tbody class="text-center">
-                    <tr>
-                        <td>{{calcs.takeoff_distances[0].label.unwrap()}} kts</td>
-                        <td>{{calcs.takeoff_distances[0].lower_bound.ground_run()}}'</td>
-                        <td>{{calcs.takeoff_distances[0].lower_bound.clear_50_ft_obstacle()}}'</td>
-                    </tr>
+                    {% call performance_table_body::render_match(
+                        "kts",
+                        calcs.takeoff_distances) 
+                    %}
                 </tbody>
             </table>
             
@@ -65,7 +64,7 @@
                         </tr>
                     </thead>
                     <tbody class="text-center">
-                        {% call performance_table_body::render(
+                        {% call performance_table_body::render3x3(
                                 "kts",
                                 calcs.takeoff_distances,
                                 cessna.headwind_tween_percentage,

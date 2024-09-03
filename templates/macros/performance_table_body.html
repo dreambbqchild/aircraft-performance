@@ -1,6 +1,6 @@
 {%- import "macros/percent_of.html" as percent_of -%}
 
-{% macro render(label_unit, performance_table, vertical_tween_percentage, horizontal_tween_percentage) %}
+{% macro render3x3(label_unit, performance_table, vertical_tween_percentage, horizontal_tween_percentage) %}
     {% for (i, row) in performance_table.iter().enumerate() %}
     <tr>
         <td>{{row.label.expect("label to be set")}} {{label_unit}}</td>
@@ -86,4 +86,12 @@
         </td>
     </tr>
     {% endfor %}
+{% endmacro %}
+
+{% macro render_match(label_unit, performance_table) %}
+    <tr>
+        <td>{{performance_table[0].label.expect("Label to be set")}} {{label_unit}}</td>
+        <td>{{performance_table[0].lower_bound.ground_run()}}'</td>
+        <td>{{performance_table[0].lower_bound.clear_50_ft_obstacle()}}'</td>
+    </tr>
 {% endmacro %}
