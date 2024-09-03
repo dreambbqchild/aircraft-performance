@@ -11,7 +11,7 @@ use super::{PerformanceParameters, QueryPerformanceParameters};
 #[derive(Template)]
 #[template(path = "partials/aircraft/cessna150j/take-off.html")]
 pub struct TakeOffTemplate {
-    start_take_off_flow: bool,
+    start_landing_flow: bool,
     is_grass: bool,
     calcs: TakeOff,
     cessna: Cessna150J
@@ -30,11 +30,11 @@ fn get_raw_html<T>(parameters: &PerformanceParameters, callback: &dyn Fn(Cessna1
     template.render().unwrap()
 }
 
-pub fn get_raw_html_for_take_off(parameters: &PerformanceParameters, start_take_off_flow: bool) -> String {
+pub fn get_raw_html_for_take_off(parameters: &PerformanceParameters, start_landing_flow: bool) -> String {
     get_raw_html(parameters, &|cessna| {
         let calcs = cessna.calc_take_off(); 
         TakeOffTemplate {
-            start_take_off_flow,
+            start_landing_flow,
             is_grass: parameters.is_grass,
             calcs,
             cessna

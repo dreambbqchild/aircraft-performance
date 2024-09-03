@@ -3,7 +3,7 @@
 {% macro render3x3(label_unit, performance_table, vertical_tween_percentage, horizontal_tween_percentage) %}
     {% for (i, row) in performance_table.iter().enumerate() %}
     <tr>
-        <td>{{row.label.expect("label to be set")}} {{label_unit}}</td>
+        <td>{{row.label.expect("label to be set")}}{{label_unit}}</td>
         <td>
             {% if i == 1 %}
                 {% call percent_of::render(

@@ -2,6 +2,8 @@
 <ul>
     <li>
         <math>
+            <mn>100%</mn>
+            <mo>&plus;</mo>
             <mn>10%</mn>
             <mo>&times;</mo>
             <mrow>
@@ -13,7 +15,7 @@
                 <mo>)</mo>
             </mrow>
             <mo>≈</mo>
-            <mn>{{"{:.2}"|format(standard_temperature_correction_percentage * 100.0)}}%</mn>
+            <mn>{{"{:.2}"|format((1.0 + standard_temperature_correction_percentage) * 100.0)}}%</mn>
         </math>
     </li>
     <li>

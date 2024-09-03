@@ -1,6 +1,7 @@
 {%- import "macros/performance_table_body.html" as performance_table_body -%}
 {%- import "macros/percent_between.html" as percent_between -%}
 {%- import "macros/percent_of.html" as percent_of -%}
+{%- import "macros/start_landing_flow.html" as start_landing_flow -%}
 
         <p>
             The pressure altitude for the altimiter setting of {{ "{:.2}"|format(cessna.pressure_in_hg) }}" at {{cessna.elevation_ft}}' is:
@@ -161,20 +162,6 @@
             </li>
         </ul>
         {% endif %}
-        {% if start_take_off_flow %}
-            <form action="/airport" method="POST">
-                <table>
-                    <tr class="form-fields">
-                        <td><label for="identifier">Airport Identifier:</label></td>
-                        <td>
-                            <input type="hidden" name="is_arrival" value="true">
-                            <input type="hidden" name="aircraft_type" value="cessna172m">
-                            <input type="text" id="identifier" name="identifier"/>
-                        </td>
-                    </tr>
-                    <tr class="form-fields">
-                        <td colspan="2"><button>Continue</button></td>
-                    </tr>
-                </table>
-            </form>
+        {% if start_landing_flow %}
+            {% call start_landing_flow::render("cessna172m") %}
         {% endif %}

@@ -3,6 +3,7 @@
 {%- import "macros/percent_of.html" as percent_of -%}
 {%- import "macros/cessna150j/temperature_correction.html" as temperature_correction -%}
 {%- import "macros/cessna150j/grass_correction.html" as grass_correction -%}
+{%- import "macros/start_landing_flow.html" as start_landing_flow -%}
 
         <h2>Take Off</h2>
         <p>
@@ -65,7 +66,7 @@
                     </thead>
                     <tbody class="text-center">
                         {% call performance_table_body::render3x3(
-                                "kts",
+                                " kts",
                                 calcs.takeoff_distances,
                                 cessna.headwind_tween_percentage,
                                 cessna.altitude_tween_percentage) 
@@ -100,20 +101,6 @@
                 calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle())
             %}
         {% endif %}
-        {% if start_take_off_flow %}
-            <form action="/airport" method="POST">
-                <table>
-                    <tr class="form-fields">
-                        <td><label for="identifier">Airport Identifier:</label></td>
-                        <td>
-                            <input type="hidden" name="is_arrival" value="true">
-                            <input type="hidden" name="aircraft_type" value="cessna150j">
-                            <input type="text" id="identifier" name="identifier"/>
-                        </td>
-                    </tr>
-                    <tr class="form-fields">
-                        <td colspan="2"><button>Continue</button></td>
-                    </tr>
-                </table>
-            </form>
+        {% if start_landing_flow %}
+            {% call start_landing_flow::render("cessna150j") %}
         {% endif %}

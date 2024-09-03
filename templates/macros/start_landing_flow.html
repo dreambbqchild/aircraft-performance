@@ -1,0 +1,17 @@
+{% macro render(aircraft_type) %}
+    <form action="/airport" method="POST">
+        <table>
+            <tr class="form-fields">
+                <td><label for="identifier">Airport Identifier:</label></td>
+                <td>
+                    <input type="hidden" name="is_arrival" value="true">
+                    <input type="hidden" name="aircraft_type" value="{{aircraft_type}}">
+                    <input type="text" id="identifier" name="identifier"/>
+                </td>
+            </tr>
+            <tr class="form-fields">
+                <td colspan="2"><button>Continue</button></td>
+            </tr>
+        </table>
+    </form>
+{%  endmacro %}

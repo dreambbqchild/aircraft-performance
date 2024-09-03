@@ -8,7 +8,7 @@ use super::{PerformanceParameters, QueryPerformanceParameters};
 #[derive(Template)]
 #[template(path = "partials/aircraft/cessna172m/performance.html")]
 pub struct PerformanceTemplate {
-    start_take_off_flow: bool,
+    start_landing_flow: bool,
     is_grass: bool,
     performance: Performance,
     cessna: Cessna172M
@@ -27,11 +27,11 @@ fn get_raw_html<T>(parameters: &PerformanceParameters, callback: &dyn Fn(Cessna1
     template.render().unwrap()
 }
 
-pub fn get_raw_html_for_take_off(parameters: &PerformanceParameters, start_take_off_flow: bool) -> String {
+pub fn get_raw_html_for_take_off(parameters: &PerformanceParameters, start_landing_flow: bool) -> String {
     get_raw_html(parameters, &|cessna| {
         let performance = cessna.calc_take_off(2100/*parameters.aircraft_weight_lbs.expect("The take off weight of the aircraft is requried for the calculation")*/); 
         PerformanceTemplate {
-            start_take_off_flow,
+            start_landing_flow,
             is_grass: parameters.is_grass,
             performance,
             cessna
@@ -59,7 +59,7 @@ pub fn get_raw_html_for_landing(parameters: &PerformanceParameters) -> String {
         let performance = cessna.calc_landing(); 
         PerformanceTemplate {
             is_grass: parameters.is_grass,
-            start_take_off_flow: false,
+            start_landing_flow: false,
             performance,
             cessna
         }
