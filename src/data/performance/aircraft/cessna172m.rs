@@ -236,7 +236,7 @@ impl Cessna172M {
 			distance_at_elevation.ground_run() as f64 * wind_correction_percentage, 
 			distance_at_elevation.clear_50_ft_obstacle() as f64 * wind_correction_percentage);
 
-		let grass_offset = (distance_corrected_for_wind.ground_run() as f64 * (1.0 + grass_ground_roll_percentage)).round() as i16;
+		let grass_offset = (distance_corrected_for_wind.ground_run() as f64 * grass_ground_roll_percentage).round() as i16;
 		let distance_corrected_for_grass = Distance(distance_corrected_for_wind.ground_run() + grass_offset, distance_corrected_for_wind.clear_50_ft_obstacle() + grass_offset); 
 
 		Corrections {
