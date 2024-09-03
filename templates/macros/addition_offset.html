@@ -1,0 +1,19 @@
+{% macro calc_offset(base_value, factor, result, unit) %}
+<math>
+    <mn>{{base_value}}{{unit}}</mn>
+    <mo>&times;</mo>
+    <mn>{{factor}}</mn>
+    <mo>≈</mo>
+    <mn>{{result}}{{unit}}</mn>
+</math>
+{% endmacro %}
+
+{% macro apply_offset(base_value, offset, result, unit) %}
+<math>
+    <mn>{{base_value}}{{unit}}</mn>
+    <mo>&times;</mo>
+    <mn>{{offset}}{{unit}}</mn>
+    <mo>≈</mo>
+    <mn>{{result}}{{unit}}</mn>
+</math>
+{% endmacro %}

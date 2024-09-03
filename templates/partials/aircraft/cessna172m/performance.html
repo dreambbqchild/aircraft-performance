@@ -1,6 +1,7 @@
 {%- import "macros/performance_table_body.html" as performance_table_body -%}
 {%- import "macros/percent_between.html" as percent_between -%}
 {%- import "macros/percent_of.html" as percent_of -%}
+{%- import "macros/addition_offset.html" as addition_offset -%}
 {%- import "macros/start_landing_flow.html" as start_landing_flow -%}
 
         <p>
@@ -132,33 +133,22 @@
         <h3>For operation on a dry, grass runway, increase distances by {{"{:.0}"|format(performance.corrections.grass_ground_roll_percentage * 100.0)}}% of the "ground roll" figure.</h3>
         <ul>
             <li>
-                <math>
-                    <mn>{{performance.corrections.distance_corrected_for_wind.ground_run()}}'</mn>
-                    <mo>&times;</mo>
-                    <mn>{{"{:.2}"|format(performance.corrections.grass_ground_roll_percentage)}}</mn>
-                    <mo>≈</mo>
-                    <mn>{{performance.corrections.grass_offset}}'</mn>
-                </math>
+                {% call addition_offset::calc_offset(performance.corrections.distance_corrected_for_wind.ground_run(), 
+                    "{:.2}"|format(performance.corrections.grass_ground_roll_percentage),
+                    performance.corrections.grass_offset,
+                    "'") %}
             </li>
             <li>
-                Ground Run:
-                <math>
-                    <mn>{{performance.corrections.distance_corrected_for_wind.ground_run()}}'</mn>
-                    <mo>&plus;</mo>
-                    <mn>{{performance.corrections.grass_offset}}'</mn>
-                    <mo>&equals;</mo>
-                    <mn>{{performance.corrections.distance_corrected_for_grass.ground_run()}}'</mn>
-                </math>
+                {% call addition_offset::apply_offset(performance.corrections.distance_corrected_for_wind.ground_run(), 
+                    performance.corrections.grass_offset,
+                    performance.corrections.distance_corrected_for_grass.ground_run(),
+                    "'") %}
             </li>
             <li>
-                Total to Clear 50' Obs:
-                <math>
-                    <mn>{{performance.corrections.distance_corrected_for_wind.clear_50_ft_obstacle()}}'</mn>
-                    <mo>&plus;</mo>
-                    <mn>{{performance.corrections.grass_offset}}'</mn>
-                    <mo>&equals;</mo>
-                    <mn>{{performance.corrections.distance_corrected_for_grass.clear_50_ft_obstacle()}}'</mn>
-                </math>
+                {% call addition_offset::apply_offset(performance.corrections.distance_corrected_for_wind.clear_50_ft_obstacle(), 
+                    performance.corrections.grass_offset,
+                    performance.corrections.distance_corrected_for_grass.clear_50_ft_obstacle(),
+                    "'") %}
             </li>
         </ul>
         {% endif %}

@@ -1,7 +1,7 @@
 {%- import "macros/percent_between.html" as percent_between -%}
 {%- import "macros/percent_of.html" as percent_of -%}
+{%- import "macros/addition_offset.html" as addition_offset -%}
 {%- import "macros/cessna150j/temperature_correction.html" as temperature_correction -%}
-{%- import "macros/cessna150j/grass_correction.html" as grass_correction -%}
         <h2>Landing</h2>
         <p>
             The airport elevation of {{cessna.elevation_ft}}' is 
@@ -139,12 +139,24 @@
 
         {% if is_grass %}
             <h3>For operation on a dry, grass runway increase distances (both "Ground Run" and "Total to Clear 50' Obstacle" by 20% of the "Total to Clear 50' Obstacle") figure.</h3>
-            {% call grass_correction::render(
-                calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle(),
-                0.2,
-                calcs.correction.grass_offset,
-                calcs.correction.distance_corrected_for_temperature.ground_run(),
-                calcs.correction.distance_corrected_for_grass.ground_run(),
-                calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle())
-            %}
+            <ul>
+                <li>
+                    {% call addition_offset::calc_offset(calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle(), 
+                        0.20,
+                        calcs.correction.grass_offset,
+                        "'") %}
+                </li>
+                <li>
+                    {% call addition_offset::apply_offset(calcs.correction.distance_corrected_for_temperature.ground_run(), 
+                        calcs.correction.grass_offset,
+                        calcs.correction.distance_corrected_for_grass.ground_run(),
+                        "'") %}
+                </li>
+                <li>
+                    {% call addition_offset::apply_offset(calcs.correction.distance_corrected_for_temperature.clear_50_ft_obstacle(), 
+                        calcs.correction.grass_offset,
+                        calcs.correction.distance_corrected_for_grass.clear_50_ft_obstacle(),
+                        "'") %}
+                </li>
+            </ul>
         {% endif %}
