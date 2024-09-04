@@ -29,7 +29,7 @@ fn get_raw_html<T>(parameters: &PerformanceParameters, callback: &dyn Fn(Cessna1
 
 pub fn get_raw_html_for_take_off(parameters: &PerformanceParameters, start_landing_flow: bool) -> String {
     get_raw_html(parameters, &|cessna| {
-        let performance = cessna.calc_take_off(2100/*parameters.aircraft_weight_lbs.expect("The take off weight of the aircraft is requried for the calculation")*/); 
+        let performance = cessna.calc_take_off(parameters.aircraft_weight_lbs.expect("The take off weight of the aircraft is requried for the calculation")); 
         PerformanceTemplate {
             start_landing_flow,
             is_grass: parameters.is_grass,

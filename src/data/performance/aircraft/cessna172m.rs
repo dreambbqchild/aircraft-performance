@@ -199,7 +199,8 @@ pub struct Performance {
 	pub lower_temperature_c: i16,
 	pub upper_temperature_c: i16,
 	pub distance_rows: [PerformanceRow; 3],
-	pub corrections: Corrections
+	pub corrections: Corrections,
+	pub aircraft_weight_lbs: Option<i16>
 }
 
 pub struct Cessna172M {
@@ -271,7 +272,8 @@ impl Cessna172M {
 			lower_temperature_c: lower_row.lower_temperature_c,
 			upper_temperature_c: upper_row.upper_temperature_c,
 			distance_rows,
-			corrections: self.calc_corrections(distance_at_elevation, grass_ground_roll_percentage)
+			corrections: self.calc_corrections(distance_at_elevation, grass_ground_roll_percentage),
+			aircraft_weight_lbs: None
 		}
 	}
 
@@ -285,15 +287,19 @@ impl Cessna172M {
 		}
 	}
 
-	pub fn calc_take_off(&self, weight_lbs: i16) -> Performance {
-		let takeoff_weight = AircraftWeight::find_takeoff_weight(weight_lbs).expect("To get the takeoff weight");
+	pub fn calc_take_off(&self, aircraft_weight_lbs: i16) -> Performance {
+		let takeoff_weight = AircraftWeight::find_takeoff_weight(aircraft_weight_lbs).expect("To get the takeoff weight");
 		let lower_row_optional = takeoff_weight.take_off_distance_lower_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the lower bound performance numbers");
 		let upper_row_optional = takeoff_weight.take_off_distance_upper_bound(self.pressure_altitude_ft, self.temperature_c).expect("To get the upper bound performance numbers");
 
 		let lower_row = self.convert_to_definate_row_result(lower_row_optional);
 		let upper_row = self.convert_to_definate_row_result(upper_row_optional);
 
-		self.calc_performance(lower_row, upper_row, 0.15)
+		let mut result = self.calc_performance(lower_row, upper_row, 0.15);
+
+		result.aircraft_weight_lbs = Some(takeoff_weight as i16);
+
+		result
 	}
 
 	pub fn calc_landing(&self) -> Performance {

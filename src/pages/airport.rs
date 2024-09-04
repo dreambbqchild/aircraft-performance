@@ -12,12 +12,14 @@ static DEPARTURE: &'static str = "Departure";
 #[derive(Deserialize)]
 pub struct SelectAirportConfig {
     aircraft_type: String,
+    aircraft_weight_lbs: Option<i16>,
     identifier: String,
     is_arrival: Option<bool>
 }
 
 #[derive(Deserialize)]
 pub struct AirportParameters {
+    aircraft_weight_lbs: Option<i16>,
     actual_metar: Option<String>,
     custom_metar: Option<String>
 }
@@ -29,6 +31,7 @@ pub struct AirportTemplate<'a> {
     mode: &'a str,
     is_take_off: bool,
     aircraft_type: String,
+    aircraft_weight_lbs: Option<i16>,
     metars: Vec<String>,
     metar: String
 }
@@ -51,7 +54,7 @@ fn select_metar(airport_parameters: &Query<AirportParameters>) -> String {
     }
 }
 
-async fn template(identifier: String, mode: &str, aircraft_type: String, metar: String) -> Response {
+async fn template(identifier: String, mode: &str, aircraft_type: String, aircraft_weight_lbs: Option<i16>, metar: String) -> Response {
     let uppercased_identifier = identifier.to_uppercase();
 
     match AIRPORTS.load_by_identifier(&uppercased_identifier) {
@@ -70,6 +73,7 @@ async fn template(identifier: String, mode: &str, aircraft_type: String, metar: 
                 mode,
                 is_take_off: mode == DEPARTURE,
                 aircraft_type,
+                aircraft_weight_lbs,
                 metars,
                 metar
             };
@@ -85,13 +89,13 @@ async fn template(identifier: String, mode: &str, aircraft_type: String, metar: 
 
 async fn get(identifier: String, mode: &str, aircraft_type: String, airport_parameters: Query<AirportParameters>) -> Response{
     let metar = select_metar(&airport_parameters);
-    template(identifier, mode, aircraft_type, metar).await
+    template(identifier, mode, aircraft_type, airport_parameters.aircraft_weight_lbs, metar).await
 }
 
 pub async fn post(Form(select_airport): Form<SelectAirportConfig>) -> Response {
     let mode = if select_airport.is_arrival.is_some_and(|v| v) { &ARRIVAL } else { &DEPARTURE };
     
-    template(select_airport.identifier, mode, select_airport.aircraft_type, String::from("")).await
+    template(select_airport.identifier, mode, select_airport.aircraft_type, select_airport.aircraft_weight_lbs, String::from("")).await
 }
 
 pub async fn get_departure(Path((identifier, aircraft_type)): Path<(String, String)>, airport_parameters: Query<AirportParameters>) -> Response {

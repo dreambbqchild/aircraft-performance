@@ -4,6 +4,12 @@
 {%- import "macros/addition_offset.html" as addition_offset -%}
 {%- import "macros/start_landing_flow.html" as start_landing_flow -%}
 
+    {% match performance.aircraft_weight_lbs %}
+    {% when Some with (val) %}
+        <h3>Using the {{val}} lbs weight table.</h3>
+    {% when None %}
+    {% endmatch %}
+
         <p>
             The pressure altitude for the altimiter setting of {{ "{:.2}"|format(cessna.pressure_in_hg) }}" at {{cessna.elevation_ft}}' is:
             <math>

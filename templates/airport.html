@@ -11,7 +11,12 @@
             {% if metars.len() > 0 %}
             <form action="/airport/{{airport.ident}}/{{mode.to_lowercase()}}/{{aircraft_type}}">
                 <h3>METARs Over Last 24 Hours:</h3>
-                <input type="hidden" value="{{airport.ident}}" name="identifier">
+                <input type="hidden" name="identifier" value="{{ airport.ident }}">
+                {% match aircraft_weight_lbs %}
+                    {% when Some with (val) %}
+                    <input type="hidden" name="aircraft_weight_lbs" value="{{ val }}">
+                    {% when None %}
+                {% endmatch %}
                 <select id="actual-metar" name="actual_metar">
                     <option value="">Choose an Actual METAR...</option>
                     {% for metar in metars %}
@@ -49,6 +54,11 @@
                                 <input type="hidden" name="metar" value="{{metar}}">
                                 <input type="hidden" name="is_take_off" value="{{ is_take_off }}">
                                 <input type="hidden" name="aircraft_type" value="{{ aircraft_type }}">
+                                {% match aircraft_weight_lbs %}
+                                    {% when Some with (val) %}
+                                    <input type="hidden" name="aircraft_weight_lbs" value="{{ val }}">
+                                    {% when None %}
+                                {% endmatch %}
                             </td>
                             <td>{{ runway.le_ident }}</td>
                             <td><input type="hidden" name="heading" value="{{ runway.le_heading }}">{{ runway.le_heading }}</td>
@@ -66,6 +76,11 @@
                                 <input type="hidden" name="metar" value="{{metar}}">
                                 <input type="hidden" name="is_take_off" value="{{ is_take_off }}">
                                 <input type="hidden" name="aircraft_type" value="{{ aircraft_type }}">
+                                {% match aircraft_weight_lbs %}
+                                    {% when Some with (val) %}
+                                    <input type="hidden" name="aircraft_weight_lbs" value="{{ val }}">
+                                    {% when None %}
+                                {% endmatch %}
                             </td>
                             <td>{{ runway.he_ident }}</td>
                             <td><input type="hidden" name="heading" value="{{ runway.he_heading }}">{{ runway.he_heading }}</td>
