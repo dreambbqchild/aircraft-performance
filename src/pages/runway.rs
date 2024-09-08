@@ -12,9 +12,8 @@ pub struct RunwayParameters {
     is_take_off: Option<bool>,
     is_grass: Option<bool>,
     headwind_kts: i16,
-    pressure_in_hg: f32,
+    pressure_in_hg: Option<f32>,
     temperature_f: i16,
-    heading: i16,
     elevation_ft: i16,
     aircraft_weight_lbs: Option<i16>
 }
@@ -43,7 +42,7 @@ pub struct RunwayTemplate {
     temperature_diff_from_standard: i16
 }
 
-async fn get_response(params: RunwayParameters) -> impl IntoResponse {
+async fn get_response(params: RunwayParameters, start_landing_flow: bool) -> impl IntoResponse {
     let is_take_off = resolve_boolean(params.is_take_off);
     let is_grass = resolve_boolean(params.is_grass);
 
@@ -67,7 +66,7 @@ async fn get_response(params: RunwayParameters) -> impl IntoResponse {
 
     let performance = PerformanceParameters {
         headwind: Velocity::Knots(params.headwind_kts),
-        pressure: Pressure::InchesOfMercury(params.pressure_in_hg),
+        pressure: match params.pressure_in_hg { Some(in_hg) => Some(Pressure::InchesOfMercury(in_hg)), None => None },
         temperature: Temperature::Fahrenheit(params.temperature_f),
         elevation_ft: params.elevation_ft,
         standard_temperature: Temperature::Fahrenheit(standard_temperature_f),
@@ -76,7 +75,7 @@ async fn get_response(params: RunwayParameters) -> impl IntoResponse {
     };
 
     let aircraft_raw_html = if is_take_off {
-        aircraft_pages::get_raw_html_for_take_off(params.aircraft_type, performance)
+        aircraft_pages::get_raw_html_for_take_off(params.aircraft_type, performance, start_landing_flow)
     } else {
         aircraft_pages::get_raw_html_for_landing(params.aircraft_type, performance)
     };
@@ -90,7 +89,7 @@ async fn get_response(params: RunwayParameters) -> impl IntoResponse {
 }
 
 pub async fn get(Query(parameters): Query<RunwayParameters>) -> impl IntoResponse {
-    get_response(parameters).await
+    get_response(parameters, false).await
 }
 
 pub async fn post(Form(config): Form<RunwayConfig>) -> impl IntoResponse {
@@ -108,12 +107,13 @@ pub async fn post(Form(config): Form<RunwayConfig>) -> impl IntoResponse {
         is_take_off: config.is_take_off,
         is_grass: config.is_grass,
         headwind_kts,
-        pressure_in_hg,
+        pressure_in_hg: Some(pressure_in_hg),
         temperature_f,
-        heading: config.heading,
         elevation_ft: config.elevation_ft,
         aircraft_weight_lbs: config.aircraft_weight_lbs
     };
+    
+    let start_landing_flow = params.is_take_off.unwrap_or_default();
 
-    get_response(params).await
+    get_response(params, start_landing_flow).await
 }

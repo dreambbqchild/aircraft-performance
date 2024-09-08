@@ -21,7 +21,7 @@ fn get_tailwind_error_response(parameters: &PerformanceParameters) -> Response {
 }
 
 fn get_raw_html<T>(parameters: &PerformanceParameters, callback: &dyn Fn(Cessna172M) -> T) -> String where T : Template {
-    let cessna = Cessna172M::new(parameters.headwind, parameters.elevation_ft, parameters.pressure, parameters.temperature.celsius());
+    let cessna = Cessna172M::new(parameters.headwind, parameters.elevation_ft, parameters.pressure.expect("Pressure to be defined"), parameters.temperature.celsius());
 
     let template = callback(cessna);
     template.render().unwrap()

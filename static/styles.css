@@ -25,7 +25,3 @@ table, th, td { border: 1px solid; }
 input[readonly] {
     border: none;
 }
-
-input:after {
-    content: attr(value);
-}

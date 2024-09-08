@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" >
+        <title>Aircraft Performance Calcs</title>
+        <link rel="stylesheet" href="/styles.css">
+    </head>
+    <body>
+        <form action="/runway" method="GET" target="performance">
+            <input type="hidden" name="aircraft_type" value="cessna150j"/>
+            <table>
+                <tr class="form-fields">
+                    <td><label for="is_take_off">Is Take Off:</label></td>
+                    <td><input type="checkbox" id="is_take_off" name="is_take_off" value="true" checked/></td>
+                </tr>
+                <tr class="form-fields">
+                    <td><label for="is_grass">Is Grass:</label></td>
+                    <td><input type="checkbox" id="is_grass" name="is_grass" value="true"/></td>
+                </tr>
+                <tr class="form-fields">
+                    <td><label for="elevation_ft">Elevation Ft:</label></td>
+                    <td><input type="text" id="elevation_ft" name="elevation_ft"/></td>
+                </tr>
+                <tr class="form-fields">
+                    <td><label for="headwind_kts">Headwind Kts:</label></td>
+                    <td><input type="text" id="headwind_kts" name="headwind_kts"/></td>
+                </tr>
+                <tr class="form-fields">
+                    <td><label for="temperature_f">Temperature ºF</label></td>
+                    <td><input type="text" id="temperature_f" name="temperature_f"/></td>
+                </tr>
+                <tr class="form-fields">
+                    <td colspan="2"><button>Begin</button></td>
+                </tr>
+            </table>
+            <iframe id="performance" name="performance"></iframe>
+        </form>
+    </body>
+</html>
