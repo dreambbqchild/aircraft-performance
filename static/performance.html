@@ -4,11 +4,40 @@
         <meta charset="utf-8" >
         <title>Aircraft Performance Calcs</title>
         <link rel="stylesheet" href="/styles.css">
+        <style>
+            .container {
+    display: flex;
+}
+
+.top {
+    width: 180px;
+}
+
+.bottom {
+    flex-grow: 1;
+}
+        </style>
     </head>
-    <body>
+    <body style="display: flex; flex-direction: column; min-height: 100vh;">
         <form action="/runway" method="GET" target="performance">
-            <input type="hidden" name="aircraft_type" value="cessna150j"/>
             <table>
+                <tr class="form-fields">
+                    <td><label for="is_arrival">Aircraft Type:</label></td>
+                    <td>
+                        <select id="aircraft_type" name="aircraft_type">
+                            <option value="cessna150j">Cessna 150 J</option>
+                            <option value="cessna172m">Cessna 172 M</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr class="form-fields">
+                    <td><label for="aircraft_weight_lbs">Aircraft Weight</label></td>
+                    <td><input type="text" id="aircraft_weight_lbs" name="aircraft_weight_lbs" value="1600"/></td>
+                </tr>
+                <tr class="form-fields">
+                    <td><label for="pressure_in_hg">Pressure</label></td>
+                    <td><input type="text" id="pressure_in_hg" name="pressure_in_hg" value="29.92"/></td>
+                </tr>
                 <tr class="form-fields">
                     <td><label for="is_take_off">Is Take Off:</label></td>
                     <td><input type="checkbox" id="is_take_off" name="is_take_off" value="true" checked/></td>
@@ -30,10 +59,10 @@
                     <td><input type="text" id="temperature_f" name="temperature_f"/></td>
                 </tr>
                 <tr class="form-fields">
-                    <td colspan="2"><button>Begin</button></td>
+                    <td colspan="2"><button>Calculate</button></td>
                 </tr>
             </table>
-            <iframe id="performance" name="performance"></iframe>
         </form>
+        <iframe id="performance" name="performance" style="flex-grow: 1;"></iframe>
     </body>
 </html>
