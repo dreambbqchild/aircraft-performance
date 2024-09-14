@@ -43,8 +43,8 @@ pub struct RunwayTemplate {
 }
 
 async fn get_response(params: RunwayParameters, start_landing_flow: bool) -> impl IntoResponse {
-    let is_take_off = params.is_take_off.unwrap_or(false);
-    let is_grass = params.is_grass.unwrap_or(false);
+    let is_take_off = params.is_take_off.unwrap_or_default();
+    let is_grass = params.is_grass.unwrap_or_default();
 
     let standard_temperature_f = Temperature::standard_temperature(params.elevation_ft).fahrenheit();
 
