@@ -10,13 +10,6 @@ pub mod runway;
 
 pub mod aircraft_pages;
 
-fn resolve_boolean(opt: Option<bool>) -> bool {
-    match  opt {
-        Some(value) => value,
-        None => false
-    }
-}
-
 pub struct HtmlTemplate<T>(T);
 
 impl<T> IntoResponse for HtmlTemplate<T> where T: Template,

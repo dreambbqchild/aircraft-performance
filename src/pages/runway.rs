@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::math::{wind::WindCalcs, Pressure, Temperature, Velocity};
 
-use super::{aircraft_pages::{self, PerformanceParameters}, resolve_boolean, ToPageTemplate};
+use super::{aircraft_pages::{self, PerformanceParameters}, ToPageTemplate};
 
 #[derive(Deserialize)]
 pub struct RunwayParameters {
@@ -43,8 +43,8 @@ pub struct RunwayTemplate {
 }
 
 async fn get_response(params: RunwayParameters, start_landing_flow: bool) -> impl IntoResponse {
-    let is_take_off = resolve_boolean(params.is_take_off);
-    let is_grass = resolve_boolean(params.is_grass);
+    let is_take_off = params.is_take_off.unwrap_or(false);
+    let is_grass = params.is_grass.unwrap_or(false);
 
     let standard_temperature_f = Temperature::standard_temperature(params.elevation_ft).fahrenheit();
 
