@@ -7,6 +7,10 @@ iframe {
     border: none;
 }
 
+input[readonly] {
+    border: none;
+}
+
 table, th, td { border: 1px solid; }
 
 .text-center {text-align: center;}
@@ -22,6 +26,15 @@ table, th, td { border: 1px solid; }
     }
 }
 
-input[readonly] {
-    border: none;
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    margin-bottom: 8px;
+
+    a, span {
+        background-color: inherit;
+        padding: 14px 16px;
+        transition: 0.3s;
+    }
 }

@@ -5,20 +5,16 @@
         <title>Aircraft Performance Calcs</title>
         <link rel="stylesheet" href="/styles.css">
         <style>
-            .container {
-    display: flex;
-}
-
-.top {
-    width: 180px;
-}
-
-.bottom {
-    flex-grow: 1;
-}
+            .container { display: flex; }
+            .top {width: 180px;}
+            .bottom { flex-grow: 1; }
         </style>
     </head>
     <body style="display: flex; flex-direction: column; min-height: 100vh;">
+        <div class="tab">
+            <a href="/">METAR</a>
+            <span>Direct</span>
+        </div>
         <form action="/runway" method="GET" target="performance">
             <table>
                 <tr class="form-fields">
